@@ -1,0 +1,267 @@
+/* ===========================================================
+   FutureSort Technologies — entry animation ("boot sequence")
+   A reusable, config-driven intro overlay. See js/intro.js for
+   the WebsiteIntroAnimation controller and its CONFIG object.
+=========================================================== */
+
+:root{
+  --fst-intro-bg: #05070c;
+  --fst-intro-cyan: #35e7ee;
+  --fst-intro-blue: #3577c9;
+  --fst-intro-outro-ms: 480ms;
+}
+
+/* Hide the real page behind the overlay until it's ready.
+   Kept to opacity (not display) so layout/measurements stay intact,
+   and no content is ever removed from the accessibility tree. */
+body:not(.fst-ready) > *:not(#fst-intro){
+  opacity:0;
+}
+body.fst-revealing > *:not(#fst-intro){
+  transition:opacity 420ms ease-out;
+}
+body.fst-ready > *:not(#fst-intro){
+  opacity:1;
+}
+
+/* If JS never runs (blocked, errors out, etc.) don't trap the visitor
+   behind a black screen — CSS-only fallback reveals after a few seconds. */
+@keyframes fst-failsafe-reveal{ to{ opacity:1; } }
+body:not(.fst-ready) > *:not(#fst-intro){
+  animation:fst-failsafe-reveal 0.01s linear 6s forwards;
+}
+
+#fst-intro{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:var(--fst-intro-bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+#fst-intro[hidden]{ display:none; }
+
+#fst-intro.fst-outro{
+  transition:opacity var(--fst-intro-outro-ms) ease, transform var(--fst-intro-outro-ms) ease;
+  opacity:0;
+  transform:scale(1.06);
+  pointer-events:none;
+}
+
+.fst-intro-vignette{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(620px 460px at 50% 50%, rgba(53,231,238,0.07), transparent 65%),
+    radial-gradient(1200px 800px at 50% 120%, rgba(53,231,238,0.05), transparent 60%);
+  pointer-events:none;
+}
+
+/* ---------- code columns ---------- */
+.fst-code-col{
+  position:absolute;
+  top:0; bottom:0;
+  width:300px;
+  overflow:hidden;
+  font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  font-size:0.76rem;
+  line-height:1.9;
+  color:var(--fst-intro-blue);
+  opacity:0;
+  -webkit-mask-image:linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  mask-image:linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  animation:fst-col-in 700ms ease-out 420ms forwards;
+}
+.fst-code-left{ left:0; padding-left:6%; text-align:left; }
+.fst-code-right{ right:0; padding-right:6%; text-align:right; }
+
+@keyframes fst-col-in{ from{ opacity:0; } to{ opacity:1; } }
+
+.fst-code-track{
+  display:inline-block;
+  animation:fst-scroll 9s linear infinite;
+}
+.fst-code-left .fst-code-track{ animation-direction:normal; }
+.fst-code-right .fst-code-track{ animation-direction:reverse; }
+
+@keyframes fst-scroll{
+  from{ transform:translateY(0); }
+  to{ transform:translateY(-50%); }
+}
+
+.fst-line{
+  white-space:nowrap;
+  animation:fst-flicker 2.6s ease-in-out infinite;
+}
+.fst-line span.k{ color:var(--fst-intro-cyan); }
+.fst-line span.dim{ opacity:0.55; }
+
+@keyframes fst-flicker{
+  0%, 100%{ opacity:0.55; }
+  45%{ opacity:0.95; }
+  55%{ opacity:0.3; }
+  75%{ opacity:0.75; }
+}
+
+.fst-code-col.fst-retract{
+  transition:opacity 420ms ease, transform 420ms ease;
+  opacity:0 !important;
+  animation-play-state:paused;
+}
+.fst-code-left.fst-retract{ transform:translateX(-24px); }
+.fst-code-right.fst-retract{ transform:translateX(24px); }
+
+/* ---------- connecting links (particles travelling toward the core) ---------- */
+.fst-link{
+  position:absolute;
+  top:50%;
+  height:1px;
+  width:22%;
+  background:linear-gradient(to right, transparent, rgba(53,231,238,0.35));
+  opacity:0;
+  animation:fst-link-in 500ms ease-out 900ms forwards;
+}
+.fst-link-left{ left:20%; }
+.fst-link-right{ right:20%; background:linear-gradient(to left, transparent, rgba(53,231,238,0.35)); }
+@keyframes fst-link-in{ to{ opacity:1; } }
+
+.fst-particle{
+  position:absolute;
+  top:-2px;
+  width:4px; height:4px;
+  border-radius:50%;
+  background:var(--fst-intro-cyan);
+  box-shadow:0 0 8px 2px rgba(53,231,238,0.7);
+  opacity:0;
+  animation:fst-particle-move 1.8s linear infinite;
+}
+.fst-link-left .fst-particle{ left:0; animation-name:fst-particle-move-right; }
+.fst-link-right .fst-particle{ right:0; animation-name:fst-particle-move-left; }
+
+@keyframes fst-particle-move-right{
+  0%{ left:0; opacity:0; }
+  10%{ opacity:1; }
+  90%{ opacity:1; }
+  100%{ left:100%; opacity:0; }
+}
+@keyframes fst-particle-move-left{
+  0%{ right:0; opacity:0; }
+  10%{ opacity:1; }
+  90%{ opacity:1; }
+  100%{ right:100%; opacity:0; }
+}
+
+.fst-link.fst-retract{ transition:opacity 300ms ease; opacity:0 !important; }
+
+/* ---------- central core ---------- */
+.fst-core{
+  position:relative;
+  width:132px; height:132px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  z-index:2;
+  opacity:0;
+  transform:scale(0.7);
+  animation:fst-core-in 620ms cubic-bezier(.2,.9,.3,1.2) forwards;
+}
+@keyframes fst-core-in{ to{ opacity:1; transform:scale(1); } }
+
+.fst-ring{
+  position:absolute; inset:-3px;
+  border-radius:50%;
+  padding:2px;
+  background:conic-gradient(from 0deg, var(--fst-intro-blue), var(--fst-intro-cyan), var(--fst-intro-blue), var(--fst-intro-cyan));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  animation:fst-spin 3.6s linear infinite;
+}
+@keyframes fst-spin{ to{ transform:rotate(360deg); } }
+
+.fst-pulse{
+  position:absolute; inset:-14px;
+  border-radius:50%;
+  box-shadow:0 0 0 0 rgba(53,231,238,0.35);
+  animation:fst-pulse 2.2s ease-out infinite;
+}
+@keyframes fst-pulse{
+  0%{ box-shadow:0 0 0 0 rgba(53,231,238,0.35); }
+  70%{ box-shadow:0 0 0 22px rgba(53,231,238,0); }
+  100%{ box-shadow:0 0 0 0 rgba(53,231,238,0); }
+}
+
+.fst-logo{
+  width:60%; height:60%;
+  object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(53,231,238,0.35));
+  transition:filter 400ms ease;
+  position:relative; z-index:1;
+  border-radius:50%;
+}
+
+.fst-core.fst-peak .fst-logo{
+  filter:drop-shadow(0 0 22px rgba(53,231,238,0.75));
+}
+.fst-core.fst-peak .fst-pulse{ animation-duration:0.9s; }
+.fst-core.fst-peak .fst-ring{ animation-duration:1.4s; }
+
+/* ---------- status line ---------- */
+.fst-status{
+  position:absolute;
+  bottom:20%;
+  left:50%;
+  transform:translateX(-50%);
+  font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  font-size:0.72rem;
+  letter-spacing:0.14em;
+  color:var(--fst-intro-cyan);
+  opacity:0;
+  transition:opacity 260ms ease;
+}
+.fst-status.fst-visible{ opacity:0.85; }
+.fst-status::before{
+  content:'';
+  display:inline-block;
+  width:6px; height:6px;
+  margin-right:9px;
+  border-radius:50%;
+  background:var(--fst-intro-cyan);
+  box-shadow:0 0 8px 1px rgba(53,231,238,0.7);
+  vertical-align:middle;
+}
+
+/* ---------- short (repeat-visit) mode ---------- */
+#fst-intro.fst-short .fst-code-col,
+#fst-intro.fst-short .fst-link,
+#fst-intro.fst-short .fst-status{
+  display:none;
+}
+#fst-intro.fst-short .fst-core{
+  animation-duration:340ms;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:760px){
+  .fst-code-col{ width:150px; font-size:0.62rem; line-height:1.7; }
+  .fst-code-left{ padding-left:4%; }
+  .fst-code-right{ padding-right:4%; }
+  .fst-link{ width:14%; }
+  .fst-link-left{ left:15%; }
+  .fst-link-right{ right:15%; }
+  .fst-core{ width:104px; height:104px; }
+  .fst-status{ bottom:24%; font-size:0.64rem; }
+}
+@media (max-width:460px){
+  .fst-code-col{ width:104px; }
+  .fst-link{ display:none; }
+}
+
+/* ---------- reduced motion: near-instant, no code/particles ---------- */
+@media (prefers-reduced-motion: reduce){
+  .fst-code-col, .fst-link, .fst-status{ display:none; }
+  .fst-core{ animation:none; opacity:1; transform:scale(1); }
+  .fst-ring{ animation:none; }
+  .fst-pulse{ animation:none; box-shadow:none; }
+  #fst-intro.fst-outro{ transition-duration:200ms; }
+}
