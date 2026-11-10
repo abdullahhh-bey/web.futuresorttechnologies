@@ -7,7 +7,8 @@ const pages = {
   "/index.html": "Home",
   "/services.html": "Services",
   "/portfolio.html": "Portfolio",
-  "/about.html": "About",
+  "/learning.html": "Learning",
+  "/about.html": "Team",
   "/contact.html": "Contact",
 };
 
@@ -17,7 +18,9 @@ const pageDescriptions = {
     "AI automation, agentic AI, SaaS product development, and web and mobile app engineering from FutureSort Technologies.",
   Portfolio:
     "Representative software, SaaS, and AI automation concepts from FutureSort Technologies.",
-  About:
+  Learning:
+    "Explore FutureSort Technologies' two-month AI engineering course and register for a free demo class.",
+  Team:
     "Meet FutureSort Technologies: a focused engineering team building practical AI, SaaS, and custom software.",
   Contact:
     "Talk to FutureSort Technologies about your next AI, SaaS, software, or app development project.",
@@ -147,6 +150,9 @@ function Icon({ name, size = 25 }) {
         <path d="m4 7 8 6 8-6" />
       </>
     ),
+    phone: (
+      <path d="M7.2 3.8 9.5 8l-1.6 1.8a13.6 13.6 0 0 0 6.3 6.3l1.8-1.6 4.2 2.3-.7 3.4a2 2 0 0 1-2.2 1.6C9 21 3 15 2.2 6.7a2 2 0 0 1 1.6-2.2l3.4-.7Z" />
+    ),
     pin: (
       <>
         <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
@@ -201,7 +207,8 @@ function Header({ currentPage }) {
     ["Home", "index.html"],
     ["Services", "services.html"],
     ["Portfolio", "portfolio.html"],
-    ["About", "about.html"],
+    ["Learning", "learning.html"],
+    ["Team", "about.html"],
     ["Contact", "contact.html"],
   ];
 
@@ -260,9 +267,20 @@ function Header({ currentPage }) {
             ))}
           </nav>
           <div className="nav-cta">
-            <a href="contact.html" className="btn btn-ghost btn-sm">
-              Start a project <Icon name="arrow" size={16} />
-            </a>
+            {currentPage === "Learning" ? (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm learning-login"
+                disabled
+                aria-label="Login is not available yet"
+              >
+                Login
+              </button>
+            ) : (
+              <a href="contact.html" className="btn btn-ghost btn-sm">
+                Start a project <Icon name="arrow" size={16} />
+              </a>
+            )}
             <button
               className="nav-toggle"
               type="button"
@@ -341,8 +359,8 @@ function NetworkCanvas() {
       nodes = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.16,
-        vy: (Math.random() - 0.5) * 0.16,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: (Math.random() - 0.5) * 0.28,
         phase: Math.random() * Math.PI * 2,
       }));
     };
@@ -407,6 +425,615 @@ function NetworkCanvas() {
   return <canvas className="hero-net" aria-hidden="true" />;
 }
 
+function BrainVisualLegacy() {
+  const canvasRef = useRef(null);
+  const sparkTimerRef = useRef(0);
+  const sparkSequenceRef = useRef(0);
+  const [activeSpark, setActiveSpark] = useState(null);
+  const capabilities = [
+    { title: "LLMs", className: "brain-tag-llm" },
+    { title: "Agentic AI", className: "brain-tag-agents" },
+    { title: "AI Architecture", className: "brain-tag-architecture" },
+    { title: "RAG Systems", className: "brain-tag-rag" },
+    { title: "AI Automation", className: "brain-tag-automation" },
+    { title: "AI Integrations", className: "brain-tag-integrations" },
+  ];
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext("2d");
+    if (!canvas || !context) return undefined;
+
+    const points = [];
+    const edges = [];
+    const addEdge = (from, to, crossHemisphere = false) => {
+      edges.push({
+        from,
+        to,
+        phase: (from * 0.137 + to * 0.071) % 1,
+        crossHemisphere,
+      });
+    };
+    const rings = 9;
+    const segments = 16;
+    for (const side of [-1, 1]) {
+      const hemisphere = [];
+      for (let ring = 0; ring < rings; ring += 1) {
+        const theta = ((ring + 0.5) / rings) * Math.PI;
+        const vertical = Math.cos(theta);
+        const ringRadius = Math.sin(theta);
+        const row = [];
+
+        for (let segment = 0; segment < segments; segment += 1) {
+          const angle = -Math.PI / 2 + (segment / (segments - 1)) * Math.PI;
+          const fold =
+            Math.sin(angle * 8 + theta * 5) * 0.032 +
+            Math.sin(angle * 13 - theta * 7) * 0.016 +
+            Math.sin(theta * 12 + angle * 3) * 0.012;
+          const radius = ringRadius * (0.74 + fold);
+          const index = points.length;
+
+          points.push({
+            x: side * (0.105 + Math.cos(angle) * radius),
+            y: vertical * 0.84,
+            z: Math.sin(angle) * radius * 0.72,
+            side,
+            phase: (index * 0.618) % 1,
+          });
+          row.push(index);
+
+          if (segment > 0) addEdge(index - 1, index);
+          if (ring > 0) {
+            addEdge(hemisphere[ring - 1][segment], index);
+            if (segment > 0 && (ring + segment) % 2 === 0) {
+              addEdge(hemisphere[ring - 1][segment - 1], index);
+            }
+          }
+        }
+        hemisphere.push(row);
+      }
+    }
+
+    const stemRings = 9;
+    const stemSegments = 8;
+    let previousStemRing = [];
+    for (let ring = 0; ring < stemRings; ring += 1) {
+      const progress = ring / (stemRings - 1);
+      const stemRing = [];
+      for (let segment = 0; segment < stemSegments; segment += 1) {
+        const angle = (segment / stemSegments) * Math.PI * 2;
+        const index = points.length;
+        const radius = 0.09 * (1 - progress * 0.42);
+        points.push({
+          x: Math.cos(angle) * radius,
+          y: -0.78 - progress * 0.43,
+          z: Math.sin(angle) * radius * 0.78,
+          side: 0,
+          phase: (index * 0.11) % 1,
+        });
+        stemRing.push(index);
+        if (segment > 0) addEdge(index - 1, index);
+        if (ring > 0) addEdge(previousStemRing[segment], index);
+      }
+      addEdge(stemRing[0], stemRing[stemSegments - 1]);
+      previousStemRing = stemRing;
+    }
+
+    let width = 0;
+    let height = 0;
+    let resizeObserver;
+
+    const resize = () => {
+      const bounds = canvas.getBoundingClientRect();
+      width = bounds.width;
+      height = bounds.height;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    };
+
+    const project = (point, angle) => {
+      const yaw = angle;
+      const pitch = -0.16 + Math.sin(angle * 0.65) * 0.045;
+      const rotatedX = point.x * Math.cos(yaw) - point.z * Math.sin(yaw);
+      const rotatedZ = point.x * Math.sin(yaw) + point.z * Math.cos(yaw);
+      const rotatedY = point.y * Math.cos(pitch) - rotatedZ * Math.sin(pitch);
+      const cameraZ = point.y * Math.sin(pitch) + rotatedZ * Math.cos(pitch);
+      const perspective = 3.8 / (3.8 + cameraZ);
+      const scale = Math.min(width * 0.4, height * 0.49);
+      return {
+        x: width / 2 + rotatedX * scale * perspective,
+        y: height / 2 - rotatedY * scale * perspective,
+        depth: cameraZ,
+        perspective,
+      };
+    };
+
+    const render = () => {
+      if (!width || !height) resize();
+      context.clearRect(0, 0, width, height);
+      const angle = 0.28;
+      const projected = points.map((point) => project(point, angle));
+      const pulse = 0;
+
+      context.save();
+      context.globalCompositeOperation = "source-over";
+      const glow = context.createRadialGradient(
+        width / 2, height / 2, 8, width / 2, height / 2, Math.min(width, height) * 0.42,
+      );
+      glow.addColorStop(0, "rgba(70, 207, 204, 0.13)");
+      glow.addColorStop(0.52, "rgba(62, 113, 170, 0.055)");
+      glow.addColorStop(1, "rgba(8, 11, 17, 0)");
+      context.fillStyle = glow;
+      context.fillRect(0, 0, width, height);
+
+      const brainScale = Math.min(width * 0.4, height * 0.49);
+      const centerX = width / 2;
+      const centerY = height * 0.46;
+      const brainX = (value) => centerX + value * brainScale;
+      const brainY = (value) => centerY + value * brainScale;
+      const stem = new Path2D();
+      stem.moveTo(brainX(-0.12), brainY(0.44));
+      stem.bezierCurveTo(brainX(-0.19), brainY(0.64), brainX(-0.13), brainY(0.82), brainX(-0.07), brainY(0.91));
+      stem.quadraticCurveTo(brainX(0), brainY(0.97), brainX(0.07), brainY(0.91));
+      stem.bezierCurveTo(brainX(0.13), brainY(0.82), brainX(0.19), brainY(0.64), brainX(0.12), brainY(0.44));
+      stem.closePath();
+      const stemFill = context.createLinearGradient(brainX(-0.12), brainY(0.55), brainX(0.12), brainY(0.9));
+      stemFill.addColorStop(0, "rgba(86, 207, 204, 0.72)");
+      stemFill.addColorStop(1, "rgba(15, 31, 47, 0.94)");
+      context.fillStyle = stemFill;
+      context.fill(stem);
+      context.strokeStyle = "rgba(126, 238, 224, 0.62)";
+      context.lineWidth = 1.4;
+      context.stroke(stem);
+
+      [-1, 1].forEach((side) => {
+        const lobe = new Path2D();
+        lobe.moveTo(brainX(side * 0.025), brainY(-0.77));
+        lobe.bezierCurveTo(brainX(side * 0.1), brainY(-0.9), brainX(side * 0.4), brainY(-0.85), brainX(side * 0.51), brainY(-0.71));
+        lobe.bezierCurveTo(brainX(side * 0.76), brainY(-0.75), brainX(side * 0.86), brainY(-0.54), brainX(side * 0.76), brainY(-0.34));
+        lobe.bezierCurveTo(brainX(side * 0.91), brainY(-0.17), brainX(side * 0.88), brainY(0.04), brainX(side * 0.75), brainY(0.19));
+        lobe.bezierCurveTo(brainX(side * 0.78), brainY(0.39), brainX(side * 0.58), brainY(0.57), brainX(side * 0.37), brainY(0.48));
+        lobe.bezierCurveTo(brainX(side * 0.23), brainY(0.64), brainX(side * 0.06), brainY(0.61), brainX(side * 0.025), brainY(0.48));
+        lobe.closePath();
+
+        context.save();
+        context.clip(lobe);
+        const fill = context.createLinearGradient(brainX(side * 0.7), brainY(-0.8), brainX(side * 0.1), brainY(0.6));
+        fill.addColorStop(0, "rgba(113, 227, 219, 0.72)");
+        fill.addColorStop(0.45, "rgba(47, 113, 133, 0.78)");
+        fill.addColorStop(1, "rgba(12, 27, 43, 0.9)");
+        context.fillStyle = fill;
+        context.fillRect(brainX(-1), brainY(-1), brainScale * 2, brainScale * 2);
+
+        const folds = [
+          [-0.08, -0.56, -0.28, -0.77, -0.53, -0.63],
+          [-0.03, -0.35, -0.27, -0.51, -0.57, -0.35],
+          [-0.04, -0.1, -0.32, -0.29, -0.56, -0.16],
+          [-0.03, 0.14, -0.3, 0.02, -0.49, 0.19],
+          [-0.04, 0.37, -0.22, 0.23, -0.37, 0.52],
+          [-0.08, -0.62, -0.02, -0.44, -0.31, -0.46],
+          [-0.08, -0.26, 0.02, -0.07, -0.3, 0.04],
+          [-0.09, 0.15, 0.02, 0.31, -0.2, 0.41],
+        ];
+        folds.forEach(([startX, startY, controlX, controlY, endX, endY], index) => {
+          context.beginPath();
+          context.moveTo(brainX(side * Math.abs(startX)), brainY(startY));
+          context.quadraticCurveTo(
+            brainX(side * Math.abs(controlX)), brainY(controlY),
+            brainX(side * Math.abs(endX)), brainY(endY),
+          );
+          context.strokeStyle = index % 2 === 0
+            ? "rgba(4, 17, 28, 0.62)"
+            : "rgba(173, 255, 239, 0.48)";
+          context.lineWidth = index % 3 === 0 ? 2.2 : 1.4;
+          context.lineCap = "round";
+          context.stroke();
+        });
+        context.restore();
+
+        context.beginPath();
+        context.strokeStyle = "rgba(155, 250, 233, 0.82)";
+        context.lineWidth = 1.35;
+        context.shadowColor = "rgba(65, 226, 218, 0.72)";
+        context.shadowBlur = 10;
+        context.stroke(lobe);
+        context.shadowBlur = 0;
+      });
+
+      context.beginPath();
+      context.moveTo(brainX(0), brainY(-0.77));
+      context.bezierCurveTo(brainX(-0.018), brainY(-0.38), brainX(0.02), brainY(0.18), brainX(0), brainY(0.51));
+      context.strokeStyle = "rgba(5, 15, 24, 0.96)";
+      context.lineWidth = 3;
+      context.stroke();
+      context.beginPath();
+      context.moveTo(brainX(0), brainY(-0.73));
+      context.bezierCurveTo(brainX(-0.012), brainY(-0.37), brainX(0.013), brainY(0.16), brainX(0), brainY(0.47));
+      context.strokeStyle = "rgba(169, 255, 239, 0.62)";
+      context.lineWidth = 0.85;
+      context.stroke();
+
+      context.globalCompositeOperation = "lighter";
+      edges.forEach((edge) => {
+        const from = projected[edge.from];
+        const to = projected[edge.to];
+        const depth = (from.depth + to.depth) / 2;
+        const depthAlpha = Math.max(0.16, Math.min(1, 0.72 - depth * 0.4));
+        const signal = (pulse + edge.phase) % 1;
+        const isPulsing = signal < 0.11;
+        context.beginPath();
+        context.moveTo(from.x, from.y);
+        context.lineTo(to.x, to.y);
+        context.strokeStyle = isPulsing
+          ? `rgba(111, 246, 232, ${0.45 * depthAlpha})`
+          : edge.crossHemisphere
+            ? `rgba(103, 160, 221, ${0.19 * depthAlpha})`
+            : `rgba(193, 224, 231, ${0.25 * depthAlpha})`;
+        context.lineWidth = isPulsing ? 0.9 : 0.48;
+        context.stroke();
+      });
+
+      context.beginPath();
+      for (let index = 0; index <= 18; index += 1) {
+        const seamPoint = project(
+          { x: 0, y: 0.82 - index * 0.09, z: 0.7, phase: 0 },
+          angle,
+        );
+        if (index === 0) context.moveTo(seamPoint.x, seamPoint.y);
+        else context.lineTo(seamPoint.x, seamPoint.y);
+      }
+      context.strokeStyle = "rgba(147, 226, 224, 0.42)";
+      context.lineWidth = 1;
+      context.setLineDash([2, 5]);
+      context.stroke();
+      context.setLineDash([]);
+
+      points.forEach((point, index) => {
+        const position = projected[index];
+        const radius = (point.phase > pulse && point.phase < pulse + 0.035)
+          ? 2.45
+          : 0.9 + position.perspective * 0.7;
+        context.beginPath();
+        context.arc(position.x, position.y, radius, 0, Math.PI * 2);
+        context.fillStyle = point.phase > pulse && point.phase < pulse + 0.035
+          ? "#b6fff1"
+          : `rgba(224, 246, 248, ${Math.max(0.32, 0.88 - position.depth * 0.24)})`;
+        context.shadowColor = "#81eee5";
+        context.shadowBlur = radius > 2 ? 7 : 2;
+        context.fill();
+      });
+      context.restore();
+
+    };
+
+    const redraw = () => {
+      resize();
+      render();
+    };
+    redraw();
+    if ("ResizeObserver" in window) {
+      resizeObserver = new ResizeObserver(redraw);
+      resizeObserver.observe(canvas);
+    } else {
+      window.addEventListener("resize", redraw);
+    }
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", redraw);
+    };
+  }, []);
+
+  const sparkToCapability = (event) => {
+    const visual = event.currentTarget.closest(".brain-visual");
+    const bounds = visual?.getBoundingClientRect();
+    if (!visual || !bounds) return;
+    const tagBounds = event.currentTarget.getBoundingClientRect();
+    const startX = bounds.width / 2;
+    const startY = bounds.height * 0.46;
+    const endX = tagBounds.left + tagBounds.width / 2 - bounds.left;
+    const endY = tagBounds.top + tagBounds.height / 2 - bounds.top;
+    const path = `M ${startX} ${startY} Q ${startX + (endX - startX) * 0.52} ${startY + (endY - startY) * 0.42 - 28} ${endX} ${endY}`;
+    sparkSequenceRef.current += 1;
+    setActiveSpark({
+      path,
+      key: sparkSequenceRef.current,
+      endX,
+      endY,
+      viewBox: `0 0 ${bounds.width} ${bounds.height}`,
+      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    });
+    window.clearTimeout(sparkTimerRef.current);
+    sparkTimerRef.current = window.setTimeout(() => setActiveSpark(null), 850);
+  };
+
+  useEffect(() => () => window.clearTimeout(sparkTimerRef.current), []);
+
+  return (
+    <div
+      className="brain-visual"
+      role="group"
+      aria-label="Illustrated three-dimensional brain and AI capabilities"
+    >
+      <div className="brain-aura" aria-hidden="true" />
+      <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
+      <span className="brain-caption"><span className="brain-caption-dot" />Intelligence, by design</span>
+      {activeSpark && (
+        <svg
+          key={activeSpark.key}
+          className="brain-spark-layer"
+          viewBox={activeSpark.viewBox}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d={activeSpark.path} pathLength="1" className="brain-spark-trail" />
+          {activeSpark.reducedMotion ? (
+            <circle cx={activeSpark.endX} cy={activeSpark.endY} r="3.5" className="brain-spark-core" />
+          ) : (
+            <circle r="3.5" className="brain-spark-core">
+              <animateMotion path={activeSpark.path} dur="650ms" fill="freeze" />
+            </circle>
+          )}
+        </svg>
+      )}
+      {capabilities.map((capability, index) => (
+        <button
+          type="button"
+          className={`brain-tag ${capability.className}`}
+          key={capability.title}
+          style={{ "--tag-delay": `${index * -0.65}s` }}
+          onPointerEnter={sparkToCapability}
+          onFocus={sparkToCapability}
+          onClick={sparkToCapability}
+          aria-label={`Explore ${capability.title}`}
+        >
+          <i />
+          {capability.title}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function BrainVisual() {
+  const canvasRef = useRef(null);
+  const sparkTimerRef = useRef(0);
+  const sparkSequenceRef = useRef(0);
+  const [activeSpark, setActiveSpark] = useState(null);
+  const capabilities = [
+    { title: "LLMs", className: "brain-tag-llm" },
+    { title: "Agentic AI", className: "brain-tag-agents" },
+    { title: "AI Architecture", className: "brain-tag-architecture" },
+    { title: "RAG Systems", className: "brain-tag-rag" },
+    { title: "AI Automation", className: "brain-tag-automation" },
+    { title: "AI Integrations", className: "brain-tag-integrations" },
+  ];
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext("2d");
+    if (!canvas || !context) return undefined;
+    let resizeObserver;
+
+    const render = () => {
+      const bounds = canvas.getBoundingClientRect();
+      const width = bounds.width;
+      const height = bounds.height;
+      if (!width || !height) return;
+
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, width, height);
+
+      const scale = Math.min(width * 0.47, height * 0.66);
+      const centerX = width * 0.5;
+      const centerY = height * 0.45;
+      const px = (value) => centerX + value * scale;
+      const py = (value) => centerY + value * scale;
+      const brain = new Path2D();
+
+      brain.moveTo(px(-0.91), py(0.03));
+      brain.bezierCurveTo(px(-0.96), py(-0.13), px(-0.84), py(-0.34), px(-0.66), py(-0.37));
+      brain.bezierCurveTo(px(-0.61), py(-0.53), px(-0.4), py(-0.58), px(-0.25), py(-0.49));
+      brain.bezierCurveTo(px(-0.12), py(-0.62), px(0.1), py(-0.61), px(0.23), py(-0.49));
+      brain.bezierCurveTo(px(0.39), py(-0.57), px(0.59), py(-0.47), px(0.65), py(-0.34));
+      brain.bezierCurveTo(px(0.84), py(-0.34), px(0.96), py(-0.17), px(0.93), py(0.01));
+      brain.bezierCurveTo(px(1.02), py(0.15), px(0.91), py(0.31), px(0.76), py(0.34));
+      brain.bezierCurveTo(px(0.69), py(0.48), px(0.51), py(0.51), px(0.37), py(0.41));
+      brain.bezierCurveTo(px(0.23), py(0.52), px(0.04), py(0.49), px(-0.08), py(0.39));
+      brain.bezierCurveTo(px(-0.26), py(0.48), px(-0.44), py(0.38), px(-0.52), py(0.29));
+      brain.bezierCurveTo(px(-0.72), py(0.31), px(-0.88), py(0.21), px(-0.91), py(0.03));
+      brain.closePath();
+
+      const halo = context.createRadialGradient(
+        centerX, centerY, scale * 0.12, centerX, centerY, scale * 1.1,
+      );
+      halo.addColorStop(0, "rgba(60, 211, 206, .13)");
+      halo.addColorStop(1, "rgba(8, 11, 17, 0)");
+      context.fillStyle = halo;
+      context.fillRect(0, 0, width, height);
+
+      context.save();
+      context.shadowColor = "rgba(76, 222, 216, .55)";
+      context.shadowBlur = 20;
+      const fill = context.createLinearGradient(px(-0.8), py(-0.55), px(0.75), py(0.5));
+      fill.addColorStop(0, "rgba(50, 79, 91, .94)");
+      fill.addColorStop(0.48, "rgba(24, 42, 52, .97)");
+      fill.addColorStop(1, "rgba(13, 25, 35, .97)");
+      context.fillStyle = fill;
+      context.fill(brain);
+      context.restore();
+
+      context.save();
+      context.clip(brain);
+      const grooves = [
+        [-0.77, -0.02, -0.76, -0.28, -0.53, -0.26, -0.47, -0.08],
+        [-0.63, -0.32, -0.43, -0.42, -0.3, -0.3, -0.39, -0.15],
+        [-0.36, -0.46, -0.2, -0.54, -0.04, -0.34, -0.2, -0.2],
+        [-0.13, -0.52, 0.03, -0.59, 0.17, -0.39, 0.02, -0.26],
+        [0.19, -0.47, 0.35, -0.55, 0.49, -0.37, 0.33, -0.19],
+        [0.55, -0.36, 0.75, -0.36, 0.83, -0.17, 0.67, -0.04],
+        [-0.78, 0.11, -0.63, 0.03, -0.5, 0.12, -0.55, 0.24],
+        [-0.43, 0.03, -0.32, -0.11, -0.15, 0.01, -0.25, 0.26],
+        [-0.08, -0.15, 0.11, -0.27, 0.28, -0.07, 0.17, 0.12],
+        [0.37, -0.13, 0.51, -0.3, 0.67, -0.13, 0.53, 0.06],
+        [0.73, 0.11, 0.65, 0.25, 0.48, 0.19, 0.42, 0.34],
+        [-0.36, 0.25, -0.23, 0.1, -0.07, 0.18, -0.16, 0.35],
+        [0.02, 0.22, 0.17, 0.1, 0.31, 0.25, 0.22, 0.37],
+      ];
+      grooves.forEach(([sx, sy, c1x, c1y, c2x, c2y, ex, ey], index) => {
+        context.beginPath();
+        context.moveTo(px(sx), py(sy));
+        context.bezierCurveTo(px(c1x), py(c1y), px(c2x), py(c2y), px(ex), py(ey));
+        context.strokeStyle = index % 2
+          ? "rgba(130, 212, 216, .33)"
+          : "rgba(3, 13, 22, .62)";
+        context.lineWidth = index % 3 === 0 ? 2 : 1.25;
+        context.lineCap = "round";
+        context.stroke();
+      });
+
+      const points = [];
+      let seed = 193;
+      const random = () => {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+      };
+      for (let attempt = 0; attempt < 1200 && points.length < 190; attempt += 1) {
+        const x = px(-0.92 + random() * 1.88);
+        const y = py(-0.58 + random() * 1.12);
+        if (context.isPointInPath(brain, x, y)) points.push({ x, y });
+      }
+
+      context.lineWidth = 0.75;
+      for (let index = 0; index < points.length; index += 1) {
+        const point = points[index];
+        let links = 0;
+        for (let otherIndex = index + 1; otherIndex < points.length && links < 4; otherIndex += 1) {
+          const other = points[otherIndex];
+          const dx = point.x - other.x;
+          const dy = point.y - other.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance > 16 && distance < Math.min(width, height) * 0.105) {
+            context.beginPath();
+            context.moveTo(point.x, point.y);
+            context.lineTo(other.x, other.y);
+            context.strokeStyle = `rgba(208, 235, 239, ${0.42 * (1 - distance / (Math.min(width, height) * 0.14))})`;
+            context.stroke();
+            links += 1;
+          }
+        }
+      }
+
+      points.forEach((point, index) => {
+        context.beginPath();
+        context.arc(point.x, point.y, index % 11 === 0 ? 1.65 : 1.1, 0, Math.PI * 2);
+        context.fillStyle = index % 13 === 0 ? "#70e9ee" : "rgba(245, 253, 255, .94)";
+        context.fill();
+      });
+      context.restore();
+
+      context.beginPath();
+      context.moveTo(px(0.48), py(0.38));
+      context.bezierCurveTo(px(0.55), py(0.48), px(0.62), py(0.57), px(0.69), py(0.63));
+      context.quadraticCurveTo(px(0.73), py(0.67), px(0.76), py(0.61));
+      context.strokeStyle = "rgba(218, 243, 246, .8)";
+      context.lineWidth = 1.25;
+      context.stroke();
+      context.beginPath();
+      context.strokeStyle = "rgba(230, 249, 250, .85)";
+      context.lineWidth = 1.4;
+      context.shadowColor = "rgba(83, 227, 222, .58)";
+      context.shadowBlur = 9;
+      context.stroke(brain);
+      context.shadowBlur = 0;
+    };
+
+    render();
+    if ("ResizeObserver" in window) {
+      resizeObserver = new ResizeObserver(render);
+      resizeObserver.observe(canvas);
+    } else {
+      window.addEventListener("resize", render);
+    }
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", render);
+    };
+  }, []);
+
+  const sparkToCapability = (event) => {
+    const visual = event.currentTarget.closest(".brain-visual");
+    const bounds = visual?.getBoundingClientRect();
+    if (!visual || !bounds) return;
+    const tagBounds = event.currentTarget.getBoundingClientRect();
+    const startX = bounds.width / 2;
+    const startY = bounds.height * 0.45;
+    const endX = tagBounds.left + tagBounds.width / 2 - bounds.left;
+    const endY = tagBounds.top + tagBounds.height / 2 - bounds.top;
+    const path = `M ${startX} ${startY} Q ${startX + (endX - startX) * 0.52} ${startY + (endY - startY) * 0.42 - 28} ${endX} ${endY}`;
+    sparkSequenceRef.current += 1;
+    setActiveSpark({
+      path,
+      key: sparkSequenceRef.current,
+      endX,
+      endY,
+      viewBox: `0 0 ${bounds.width} ${bounds.height}`,
+      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    });
+    window.clearTimeout(sparkTimerRef.current);
+    sparkTimerRef.current = window.setTimeout(() => setActiveSpark(null), 850);
+  };
+
+  useEffect(() => () => window.clearTimeout(sparkTimerRef.current), []);
+
+  return (
+    <div className="brain-visual" role="group" aria-label="Illustrated neural brain and AI capabilities">
+      <div className="brain-aura" aria-hidden="true" />
+      <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
+      <span className="brain-caption"><span className="brain-caption-dot" />Intelligence, by design</span>
+      {activeSpark && (
+        <svg
+          key={activeSpark.key}
+          className="brain-spark-layer"
+          viewBox={activeSpark.viewBox}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d={activeSpark.path} pathLength="1" className="brain-spark-trail" />
+          {activeSpark.reducedMotion ? (
+            <circle cx={activeSpark.endX} cy={activeSpark.endY} r="3.5" className="brain-spark-core" />
+          ) : (
+            <circle r="3.5" className="brain-spark-core">
+              <animateMotion path={activeSpark.path} dur="650ms" fill="freeze" />
+            </circle>
+          )}
+        </svg>
+      )}
+      {capabilities.map((capability, index) => (
+        <button
+          type="button"
+          className={`brain-tag ${capability.className}`}
+          key={capability.title}
+          style={{ "--tag-delay": `${index * -0.65}s` }}
+          onPointerEnter={sparkToCapability}
+          onFocus={sparkToCapability}
+          onClick={sparkToCapability}
+          aria-label={`Explore ${capability.title}`}
+        >
+          <i />
+          {capability.title}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PageHero({ eyebrow, title, children }) {
   return (
     <section className="page-hero">
@@ -434,6 +1061,70 @@ function SectionHeading({ eyebrow, title, children, centered = false }) {
       <h2>{title}</h2>
       {children && <p>{children}</p>}
     </div>
+  );
+}
+
+function TechnologySection() {
+  const groups = [
+    {
+      title: "Frontend",
+      technologies: ["React", "Angular", "Vue.js", "Next.js", "TypeScript", "Tailwind CSS"],
+    },
+    {
+      title: "Backend",
+      technologies: ["Node.js", "Python", "Java", "PHP", "Go", ".NET"],
+    },
+    {
+      title: "Artificial intelligence",
+      technologies: ["TensorFlow", "PyTorch", "Keras", "OpenAI", "LLMs", "Agentic AI", "RAG Systems", "Computer Vision"],
+    },
+    {
+      title: "Data science",
+      technologies: ["Data Analysis", "Big Data", "Predictive Models", "Data Visualization", "Business Intelligence", "Statistical Analysis"],
+    },
+    {
+      title: "Cloud & DevOps",
+      technologies: ["AWS", "Azure", "Google Cloud", "Docker", "Kubernetes", "CI/CD"],
+    },
+    {
+      title: "Databases",
+      technologies: ["MongoDB", "PostgreSQL", "MySQL", "Redis", "Firebase"],
+    },
+  ];
+
+  return (
+    <section className="technology-section" id="technologies">
+      <div className="container">
+        <div className="technology-heading reveal">
+          <span className="eyebrow">
+            <span className="eyebrow-dot" />
+            Tools behind the work
+          </span>
+          <h2>Technologies we <span>master.</span></h2>
+          <p>
+            Our team works across modern product, AI, data, and cloud
+            technologies—choosing the right tools for the job, not forcing
+            every project into the same stack.
+          </p>
+        </div>
+        <div className="technology-grid">
+          {groups.map((group, index) => (
+            <article
+              className="technology-group reveal"
+              key={group.title}
+              style={{ "--reveal-delay": `${(index % 3) * 90}ms` }}
+            >
+              <h3>{group.title}</h3>
+              <div className="technology-pills">
+                {group.technologies.map((technology) => (
+                  <span key={technology}>{technology}</span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -471,8 +1162,7 @@ function ServiceCard({ item, index }) {
 
 function ProcessSteps() {
   const scrollRef = useRef(null);
-  const railFillRef = useRef(null);
-  const railIndicatorRef = useRef(null);
+  const railRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const steps = [
     [
@@ -504,32 +1194,55 @@ function ProcessSteps() {
 
     const updateProgress = () => {
       frame = 0;
-      const bounds = scrollTrack.getBoundingClientRect();
-      const sticky = scrollTrack.querySelector(".process-sticky");
-      if (!sticky || window.matchMedia("(max-width: 700px)").matches) return;
+      const rail = railRef.current;
+      if (!rail) return;
+      let progress;
 
-      const stickyTop = Number.parseFloat(
-        window.getComputedStyle(sticky).top,
-      ) || 0;
-      const scrollDistance = Math.max(
-        1,
-        scrollTrack.offsetHeight - sticky.offsetHeight,
-      );
-      const progress = Math.max(
-        0,
-        Math.min(1, (stickyTop - bounds.top) / scrollDistance),
-      );
-      scrollTrack.style.setProperty("--process-progress", progress.toFixed(4));
-      if (railFillRef.current) {
-        railFillRef.current.style.width = `${progress * 100}%`;
-      }
-      if (railIndicatorRef.current) {
-        railIndicatorRef.current.style.left = `${progress * 100}%`;
+      if (window.matchMedia("(max-width: 700px)").matches) {
+        const grid = scrollTrack.querySelector(".process-grid");
+        const nodes = scrollTrack.querySelectorAll(".process-number");
+        if (!grid || nodes.length < 2) return;
+
+        const gridBounds = grid.getBoundingClientRect();
+        const firstBounds = nodes[0].getBoundingClientRect();
+        const lastBounds = nodes[nodes.length - 1].getBoundingClientRect();
+        const firstCenter = firstBounds.top + firstBounds.height / 2;
+        const lastCenter = lastBounds.top + lastBounds.height / 2;
+
+        rail.style.top = `${firstCenter - gridBounds.top}px`;
+        rail.style.bottom = `${gridBounds.bottom - lastCenter}px`;
+        progress = Math.max(
+          0,
+          Math.min(
+            1,
+            ((window.innerHeight * 0.52) - firstCenter) /
+              Math.max(1, lastCenter - firstCenter),
+          ),
+        );
+      } else {
+        const bounds = scrollTrack.getBoundingClientRect();
+        const sticky = scrollTrack.querySelector(".process-sticky");
+        if (!sticky) return;
+
+        const stickyTop = Number.parseFloat(
+          window.getComputedStyle(sticky).top,
+        ) || 0;
+        const scrollDistance = Math.max(
+          1,
+          scrollTrack.offsetHeight - sticky.offsetHeight,
+        );
+        progress = Math.max(
+          0,
+          Math.min(1, (stickyTop - bounds.top) / scrollDistance),
+        );
       }
 
+      const progressValue = progress.toFixed(4);
+      scrollTrack.style.setProperty("--process-progress", progressValue);
+      rail.style.setProperty("--process-progress", progressValue);
       const nextIndex = Math.min(
         steps.length - 1,
-        Math.floor(progress * steps.length),
+        Math.round(progress * (steps.length - 1)),
       );
       setActiveIndex(current => current === nextIndex ? current : nextIndex);
     };
@@ -538,31 +1251,8 @@ function ProcessSteps() {
       if (!frame) frame = window.requestAnimationFrame(updateProgress);
     };
 
-    const mobileQuery = window.matchMedia("(max-width: 700px)");
-    let mobileObserver;
     const updateResponsiveMode = () => {
-      mobileObserver?.disconnect();
-      mobileObserver = undefined;
-      if (mobileQuery.matches && "IntersectionObserver" in window) {
-        mobileObserver = new IntersectionObserver(
-          (entries) => {
-            const visible = entries
-              .filter((entry) => entry.isIntersecting)
-              .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-            if (!visible) return;
-            const processSteps = Array.from(
-              scrollTrack.querySelectorAll(".process-step"),
-            );
-            setActiveIndex(processSteps.indexOf(visible.target));
-          },
-          { threshold: [0.25, 0.5, 0.75], rootMargin: "-20% 0px -25% 0px" },
-        );
-        scrollTrack
-          .querySelectorAll(".process-step")
-          .forEach((step) => mobileObserver.observe(step));
-      } else {
-        updateProgress();
-      }
+      updateProgress();
     };
 
     updateProgress();
@@ -573,7 +1263,6 @@ function ProcessSteps() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateResponsiveMode);
       window.cancelAnimationFrame(frame);
-      mobileObserver?.disconnect();
     };
   }, [steps.length]);
 
@@ -586,22 +1275,23 @@ function ProcessSteps() {
           centered
         />
         <div className="process-grid">
-          <div className="process-rail" aria-hidden="true">
-            <span className="process-rail-fill" ref={railFillRef} />
-            <span
-              className="process-rail-indicator"
-              ref={railIndicatorRef}
-            />
+          <div className="process-rail" ref={railRef} aria-hidden="true">
+            <span className="process-rail-fill">
+              <span className="process-rail-indicator" />
+            </span>
           </div>
           {steps.map(([number, title, text], index) => (
             <article
-              className={`process-step${activeIndex === index ? " is-current" : ""}${activeIndex > index ? " is-complete" : ""}`}
+              className={`process-step${index % 2 === 0 ? " is-left" : " is-right"}${activeIndex === index ? " is-current" : ""}${activeIndex > index ? " is-complete" : ""}`}
+              style={{ gridRow: index + 1 }}
               key={number}
               aria-current={activeIndex === index ? "step" : undefined}
             >
               <span className="process-number">{number}</span>
-              <h3>{title}</h3>
-              <p>{text}</p>
+              <div className="process-step-copy">
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
             </article>
           ))}
         </div>
@@ -614,27 +1304,196 @@ function ProcessSteps() {
 }
 
 function CTA({
-  title = "Have a product idea worth building?",
+  title = "Initiate partnership.",
   text = "Tell us what you are trying to solve. We will help you find a clear path from idea to something real.",
-  button = "Start a conversation",
+  button = "Secure engagement",
 }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [briefLength, setBriefLength] = useState(0);
+
+  const onSubmit = (event) => {
+    event.preventDefault();
+    setSubmitted(true);
+  };
+
   return (
     <section className="cta-section">
       <div className="container">
-        <div className="cta-panel reveal">
-          <div className="cta-glow" aria-hidden="true" />
-          <div>
+        <div className="engagement-layout reveal">
+          <div className="engagement-copy">
             <span className="eyebrow">
               <span className="eyebrow-dot" />
-              Your next chapter
+              Engagement
             </span>
             <h2>{title}</h2>
             <p>{text}</p>
+            <div className="engagement-details">
+              <a href="mailto:hello@example.com">
+                <span className="engagement-icon"><Icon name="mail" size={20} /></span>
+                <span><small>Email us</small><strong>hello@example.com</strong></span>
+              </a>
+              <a href="tel:+923000000000">
+                <span className="engagement-icon"><Icon name="phone" size={20} /></span>
+                <span><small>Call us</small><strong>+92 300 0000000</strong></span>
+              </a>
+              <div>
+                <span className="engagement-icon"><Icon name="pin" size={20} /></span>
+                <span><small>Location</small><strong>Lahore, Punjab, Pakistan</strong></span>
+              </div>
+            </div>
           </div>
-          <a className="btn btn-primary" href="contact.html">
-            {button}
-            <Icon name="arrow" size={18} />
-          </a>
+          <form className="engagement-form" onSubmit={onSubmit}>
+            <p className="engagement-form-note">Frontend enquiry preview · not connected to a submission service.</p>
+            <div className="engagement-field-row">
+              <div className="engagement-field">
+                <label htmlFor="engagement-name">Primary contact name</label>
+                <input id="engagement-name" name="name" autoComplete="name" required placeholder="e.g. Alex Morgan" />
+              </div>
+              <div className="engagement-field">
+                <label htmlFor="engagement-email">Corporate email</label>
+                <input id="engagement-email" name="email" type="email" autoComplete="email" required placeholder="you@company.com" />
+              </div>
+            </div>
+            <div className="engagement-field engagement-brief-field">
+              <label htmlFor="engagement-brief">
+                Project blueprint &amp; vision <span>({briefLength}/1500)</span>
+              </label>
+              <textarea
+                id="engagement-brief"
+                name="brief"
+                maxLength={1500}
+                onChange={(event) => setBriefLength(event.target.value.length)}
+                required
+                placeholder="Share a little about the problem, product, or idea..."
+              />
+            </div>
+            <button type="submit" className="engagement-submit">
+              {button}<Icon name="arrow" size={18} />
+            </button>
+            {submitted && (
+              <p className="engagement-notice" role="status">
+                This enquiry form is a frontend preview and is not connected to a submission service yet. Please use our{" "}
+                <a href="contact.html">contact page</a> to continue.
+              </p>
+            )}
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const reviewPlaceholders = Array.from({ length: 8 }, (_, index) => ({
+  id: index + 1,
+  name: "Client name",
+  role: "Project / role",
+  text: "Add an approved client review here before publishing. Replace this placeholder with the client's exact feedback and confirm permission to share it.",
+}));
+
+function ReviewsSection() {
+  const trackRef = useRef(null);
+  const [activeReview, setActiveReview] = useState(0);
+  const [maxReviewIndex, setMaxReviewIndex] = useState(7);
+
+  const updateActiveReview = () => {
+    const track = trackRef.current;
+    const firstCard = track?.firstElementChild;
+    if (!track || !firstCard) return;
+    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    const step = firstCard.getBoundingClientRect().width + gap;
+    const maxIndex = Math.max(
+      0,
+      Math.round((track.scrollWidth - track.clientWidth) / step),
+    );
+    setMaxReviewIndex(maxIndex);
+    setActiveReview(Math.min(maxIndex, Math.max(0, Math.round(track.scrollLeft / step))));
+  };
+
+  const moveReview = (direction) => {
+    const track = trackRef.current;
+    const firstCard = track?.firstElementChild;
+    if (!track || !firstCard) return;
+    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    track.scrollBy({
+      left: direction * (firstCard.getBoundingClientRect().width + gap),
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return undefined;
+    updateActiveReview();
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(updateActiveReview);
+      observer.observe(track);
+      return () => observer.disconnect();
+    }
+    window.addEventListener("resize", updateActiveReview);
+    return () => window.removeEventListener("resize", updateActiveReview);
+  }, []);
+
+  const goToReview = (index) => {
+    const track = trackRef.current;
+    const firstCard = track?.firstElementChild;
+    if (!track || !firstCard) return;
+    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    track.scrollTo({
+      left: index * (firstCard.getBoundingClientRect().width + gap),
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section className="reviews-section section section-darker" aria-labelledby="reviews-title">
+      <div className="container">
+        <div className="reviews-heading reveal">
+          <div>
+            <span className="eyebrow"><span className="eyebrow-dot" />Client voices</span>
+            <h2 id="reviews-title">Good work speaks for itself.</h2>
+            <p>These are clearly marked content slots, ready for approved client feedback.</p>
+          </div>
+          <div className="reviews-controls">
+            <span className="reviews-count">{String(activeReview + 1).padStart(2, "0")} <i>/</i> {String(reviewPlaceholders.length).padStart(2, "0")}</span>
+            <button type="button" onClick={() => moveReview(-1)} disabled={activeReview === 0} aria-label="Previous review">
+              <Icon name="arrow" size={18} />
+            </button>
+            <button type="button" onClick={() => moveReview(1)} disabled={activeReview >= maxReviewIndex} aria-label="Next review">
+              <Icon name="arrow" size={18} />
+            </button>
+          </div>
+        </div>
+        <div
+          className="reviews-track"
+          ref={trackRef}
+          onScroll={updateActiveReview}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Client review placeholders"
+        >
+          {reviewPlaceholders.map((review) => (
+            <article className="review-card" key={review.id}>
+              <span className="review-placeholder-label">Review placeholder {String(review.id).padStart(2, "0")}</span>
+              <div className="review-quote-mark" aria-hidden="true">“</div>
+              <blockquote>{review.text}</blockquote>
+              <div className="review-author">
+                <span className="review-avatar" aria-hidden="true">{String(review.id).padStart(2, "0")}</span>
+                <span><strong>{review.name}</strong><small>{review.role}</small></span>
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="reviews-pagination" aria-label="Choose a review">
+          {reviewPlaceholders.slice(0, maxReviewIndex + 1).map((review, index) => (
+            <button
+              type="button"
+              key={review.id}
+              className={index === activeReview ? "is-active" : ""}
+              onClick={() => goToReview(index)}
+              aria-label={`Go to review ${index + 1}`}
+              aria-current={index === activeReview ? "true" : undefined}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -657,8 +1516,9 @@ function Footer() {
           </div>
           <div className="footer-column">
             <h2>Explore</h2>
-            <a href="about.html">About us</a>
+            <a href="about.html">Team</a>
             <a href="portfolio.html">Our work</a>
+            <a href="learning.html">Learning</a>
             <a href="contact.html">Contact</a>
           </div>
           <div className="footer-column">
@@ -713,14 +1573,15 @@ function HomePage() {
           <div className="hero-copy">
             <span className="eyebrow">
               <span className="eyebrow-dot" />
-              Future made functional
+              AI-first product engineering
             </span>
             <h1>
-              Software for your next big <span>move.</span>
+              We build with AI at the <span>core.</span>
             </h1>
             <p className="hero-lede">
-              We build intelligent products, useful automations, and digital
-              foundations that help ambitious teams move forward.
+              From LLMs and RAG to agentic systems and AI architecture, our
+              whole team thinks deeply about how intelligence should work
+              inside real products.
             </p>
             <div className="hero-actions">
               <a className="btn btn-primary" href="contact.html">
@@ -732,95 +1593,11 @@ function HomePage() {
             </div>
             <div className="hero-note">
               <span className="status-dot" />
-              Strategy to software, all under one roof
+              AI expertise across every stage of the build
             </div>
           </div>
-          <div
-            className="hero-art reveal"
-            aria-label="Illustration of a connected AI software platform"
-          >
-            <div className="art-orbit orbit-outer" />
-            <div className="art-orbit orbit-inner" />
-            <div className="orbit-node node-top">
-              <Icon name="spark" size={19} />
-            </div>
-            <div className="orbit-node node-right">
-              <Icon name="code" size={19} />
-            </div>
-            <div className="orbit-node node-left">
-              <Icon name="layers" size={19} />
-            </div>
-            <div className="product-card">
-              <div className="product-card-head">
-                <span className="product-mark">
-                  <span />
-                </span>
-                <div>
-                  <strong>FutureOS</strong>
-                  <small>Workspace overview</small>
-                </div>
-                <span className="live-pill">
-                  <i /> Live
-                </span>
-              </div>
-              <div className="product-card-body">
-                <div className="dashboard-label">Your systems, in sync</div>
-                <div className="dashboard-graph">
-                  <span className="graph-grid" />
-                  <svg
-                    viewBox="0 0 330 104"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                  >
-                    <defs>
-                      <linearGradient
-                        id="graph-fill"
-                        x1="0"
-                        x2="0"
-                        y1="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0"
-                          stopColor="#52e1dc"
-                          stopOpacity=".25"
-                        />
-                        <stop offset="1" stopColor="#52e1dc" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M0 82 C30 77 35 48 67 58 S106 75 131 46 169 56 194 37 232 56 257 30 302 34 330 12 V104 H0Z"
-                      fill="url(#graph-fill)"
-                    />
-                    <path
-                      d="M0 82 C30 77 35 48 67 58 S106 75 131 46 169 56 194 37 232 56 257 30 302 34 330 12"
-                      fill="none"
-                      stroke="#52e1dc"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                </div>
-                <div className="dashboard-foot">
-                  <span>
-                    <i className="mini-dot" />
-                    Automations running
-                  </span>
-                  <strong>
-                    12 <small>active</small>
-                  </strong>
-                </div>
-              </div>
-            </div>
-            <div className="floating-chip chip-one">
-              <span className="chip-check">
-                <Icon name="check" size={14} />
-              </span>
-              Workflow complete
-            </div>
-            <div className="floating-chip chip-two">
-              <span className="chip-pulse" />
-              AI agent connected
-            </div>
+          <div className="hero-art reveal">
+            <BrainVisual />
           </div>
         </div>
         <div className="container hero-bottom">
@@ -831,6 +1608,8 @@ function HomePage() {
           </a>
         </div>
       </section>
+
+      <TechnologySection />
 
       <section id="capabilities" className="section section-capabilities">
         <div className="container">
@@ -886,8 +1665,311 @@ function HomePage() {
           <ProcessSteps />
         </div>
       </section>
+      <ReviewsSection />
       <CTA />
     </>
+  );
+}
+
+const learningTracks = [
+  {
+    id: "technical",
+    number: "01",
+    title: "Technical batch",
+    subtitle: "Build and ship AI-powered software.",
+    topics: [
+      "Python foundations for AI engineering",
+      "Working with LLM APIs and structured outputs",
+      "RAG, embeddings, and practical retrieval",
+      "Agent workflows, tool use, and evaluation",
+      "Deploying and monitoring AI applications",
+    ],
+  },
+  {
+    id: "non-technical",
+    number: "02",
+    title: "Non-technical batch",
+    subtitle: "Design useful AI workflows and products.",
+    topics: [
+      "AI foundations and practical capabilities",
+      "Prompt design and evaluating AI responses",
+      "Mapping business workflows for automation",
+      "Choosing AI tools and planning integrations",
+      "Responsible AI, privacy, and human oversight",
+    ],
+  },
+];
+
+function LearningPage() {
+  const [studentStatus, setStudentStatus] = useState("");
+  const [courseTrack, setCourseTrack] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const submitRegistration = (event) => {
+    event.preventDefault();
+    setSubmitted(true);
+  };
+
+  const chooseTrack = (trackId) => {
+    setCourseTrack(trackId);
+    document.getElementById("demo-registration")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  return (
+    <div className="learning-page">
+      <section className="learning-hero">
+        <NetworkCanvas />
+        <div className="learning-hero-glow learning-hero-glow-one" aria-hidden="true" />
+        <div className="learning-hero-glow learning-hero-glow-two" aria-hidden="true" />
+        <div className="container learning-hero-content">
+          <div className="learning-open-badge reveal">
+            <span />
+            Registrations are open
+          </div>
+          <span className="eyebrow reveal"><span className="eyebrow-dot" />FutureSort Learning</span>
+          <h1 className="reveal">Learn to build with <span>AI.</span></h1>
+          <p className="learning-hero-lede reveal">
+            A focused, two-month AI engineering course with separate technical
+            and non-technical learning paths. Start with a free demo class for
+            the batch that fits you.
+          </p>
+          <div className="learning-hero-actions reveal">
+            <a className="btn btn-primary" href="#demo-registration">
+              Register for a free demo <Icon name="arrow" size={18} />
+            </a>
+            <span className="learning-duration"><Icon name="clock" size={17} /> 2-month course</span>
+          </div>
+          <div className="learning-hero-orbit" aria-hidden="true"><span /><span /><span /></div>
+        </div>
+      </section>
+
+      <section className="section learning-tracks-section" aria-labelledby="learning-tracks-title">
+        <div className="container">
+          <SectionHeading
+            eyebrow="Two learning paths"
+            title="Choose the way you want to work with AI."
+            centered
+          >
+            Each batch has its own course content and its own free demo session.
+          </SectionHeading>
+          <div className="learning-track-grid">
+            {learningTracks.map((track) => (
+              <article className={`learning-track-card reveal learning-track-${track.id}`} key={track.id}>
+                <div className="learning-track-topline">
+                  <span>{track.number}</span>
+                  <span className="learning-track-pill">2 months</span>
+                </div>
+                <h3>{track.title}</h3>
+                <p>{track.subtitle}</p>
+                <ul>
+                  {track.topics.map((topic) => (
+                    <li key={topic}><Icon name="check" size={16} />{topic}</li>
+                  ))}
+                </ul>
+                <button type="button" className="learning-track-link" onClick={() => chooseTrack(track.id)}>
+                  Register for free demo <Icon name="arrow" size={17} />
+                </button>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section learning-registration-section" id="demo-registration">
+        <div className="container learning-registration-layout">
+          <div className="learning-registration-copy reveal">
+            <span className="eyebrow"><span className="eyebrow-dot" />Your first step</span>
+            <h2>Try a demo class. <span>Free.</span></h2>
+            <p>
+              Get a feel for the learning experience, meet the course team, and
+              see which path is right for you. Choose either the technical or
+              non-technical demo below.
+            </p>
+            <div className="learning-registration-points">
+              <div><span>01</span><p>Pick your learning path</p></div>
+              <div><span>02</span><p>Join its dedicated demo session</p></div>
+              <div><span>03</span><p>Explore practical AI engineering</p></div>
+            </div>
+          </div>
+
+          <form className="learning-form reveal" onSubmit={submitRegistration}>
+            <div className="learning-form-heading">
+              <span className="learning-form-kicker">FREE DEMO REGISTRATION</span>
+              <h3>Save your place</h3>
+              <p>Your details stay in this frontend preview and are not sent or saved.</p>
+            </div>
+            <div className="learning-form-row">
+              <div className="learning-field">
+                <label htmlFor="learning-first-name">First name <span>*</span></label>
+                <input id="learning-first-name" name="firstName" autoComplete="given-name" required placeholder="First name" />
+              </div>
+              <div className="learning-field">
+                <label htmlFor="learning-last-name">Last name <span>*</span></label>
+                <input id="learning-last-name" name="lastName" autoComplete="family-name" required placeholder="Last name" />
+              </div>
+            </div>
+            <div className="learning-field">
+              <label htmlFor="learning-email">Email address <span>*</span></label>
+              <input id="learning-email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+            </div>
+            <div className="learning-field">
+              <label htmlFor="learning-phone">Phone number <span>*</span></label>
+              <input id="learning-phone" name="phone" type="tel" autoComplete="tel" required placeholder="+92 ..." />
+            </div>
+            <div className="learning-form-row">
+              <div className="learning-field">
+                <label htmlFor="learning-status">Are you currently a student? <span>*</span></label>
+                <select
+                  id="learning-status"
+                  name="studentStatus"
+                  value={studentStatus}
+                  onChange={(event) => setStudentStatus(event.target.value)}
+                  required
+                >
+                  <option value="" disabled>Select one</option>
+                  <option value="student">Yes, I am a student</option>
+                  <option value="other">No</option>
+                </select>
+              </div>
+              <div className="learning-field">
+                <label htmlFor="learning-track">Choose a demo batch <span>*</span></label>
+                <select
+                  id="learning-track"
+                  name="courseTrack"
+                  value={courseTrack}
+                  onChange={(event) => setCourseTrack(event.target.value)}
+                  required
+                >
+                  <option value="" disabled>Select a free demo</option>
+                  <option value="technical">Technical batch demo · Free</option>
+                  <option value="non-technical">Non-technical batch demo · Free</option>
+                </select>
+              </div>
+            </div>
+            {studentStatus === "student" && (
+              <div className="learning-form-row learning-student-fields">
+                <div className="learning-field">
+                  <label htmlFor="learning-university">University <span>*</span></label>
+                  <input id="learning-university" name="university" required placeholder="Your university" />
+                </div>
+                <div className="learning-field">
+                  <label htmlFor="learning-degree">Degree / program <span>*</span></label>
+                  <input id="learning-degree" name="degree" required placeholder="e.g. BS Computer Science" />
+                </div>
+              </div>
+            )}
+            {studentStatus === "other" && (
+              <div className="learning-field learning-student-fields">
+                <label htmlFor="learning-organization">University or organization <small>(optional)</small></label>
+                <input id="learning-organization" name="organization" placeholder="Where you study or work" />
+              </div>
+            )}
+            <label className="learning-consent">
+              <input type="checkbox" name="updatesConsent" />
+              <span>I'd like to receive occasional updates about new courses, products, and FutureSort news.</span>
+            </label>
+            <button type="submit" className="btn btn-primary learning-submit">
+              Register for the free demo <Icon name="arrow" size={17} />
+            </button>
+            {submitted && (
+              <p className="learning-form-status" role="status">
+                Your details passed the form checks, but this preview does not send or store registrations yet.
+              </p>
+            )}
+          </form>
+        </div>
+      </section>
+
+      <section className="learning-bottom-cta">
+        <div className="container learning-bottom-inner reveal">
+          <span className="eyebrow"><span className="eyebrow-dot" />Registrations open</span>
+          <h2>Start with a free demo.</h2>
+          <a className="btn btn-primary" href="#demo-registration">Choose your batch <Icon name="arrow" size={17} /></a>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ServicesTimeline() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const timelineRef = useRef(null);
+  const railRef = useRef(null);
+
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    if (!timeline) return undefined;
+    let frame = 0;
+
+    const updateProgress = () => {
+      frame = 0;
+      const rail = railRef.current;
+      const steps = timeline.querySelectorAll(".service-timeline-step");
+      if (!rail || !steps.length) return;
+      const centers = Array.from(steps, (step) => {
+        const stepBounds = step.querySelector(".service-timeline-number").getBoundingClientRect();
+        return stepBounds.top + stepBounds.height / 2;
+      });
+      const gridBounds = timeline.querySelector(".service-timeline-list").getBoundingClientRect();
+      rail.style.top = `${centers[0] - gridBounds.top}px`;
+      rail.style.bottom = `${gridBounds.bottom - centers[centers.length - 1]}px`;
+      const progress = Math.max(0, Math.min(1,
+        ((window.innerHeight * 0.52) - centers[0]) /
+        Math.max(1, centers[centers.length - 1] - centers[0]),
+      ));
+      timeline.style.setProperty("--service-progress", progress.toFixed(4));
+      timeline.style.setProperty("--service-marker-position", `${progress * 100}%`);
+      const nextIndex = centers.reduce((closest, center, index) =>
+        Math.abs(center - window.innerHeight * 0.52) <
+          Math.abs(centers[closest] - window.innerHeight * 0.52) ? index : closest,
+      0);
+      setActiveIndex((current) => current === nextIndex ? current : nextIndex);
+    };
+
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateProgress);
+    };
+    updateProgress();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    return () => {
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+      window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <div className="service-timeline" ref={timelineRef}>
+      <div className="service-timeline-list">
+        <div className="service-timeline-rail" ref={railRef} aria-hidden="true">
+          <span />
+        </div>
+        {serviceItems.map((item, index) => (
+          <article
+            id={item.id}
+            className={`service-timeline-step${index % 2 === 0 ? " is-left" : " is-right"}${activeIndex === index ? " is-current" : ""}${activeIndex > index ? " is-complete" : ""}`}
+            key={item.id}
+          >
+            <div className="service-timeline-copy">
+              <span className="service-timeline-kicker">Service {item.number}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+              <div className="service-timeline-tags">
+                {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
+              </div>
+              <a href="portfolio.html" className="service-timeline-link">
+                Explore related work <Icon name="arrow" size={16} />
+              </a>
+            </div>
+            <span className="service-timeline-number">{item.number}</span>
+          </article>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -895,107 +1977,22 @@ function ServicesPage() {
   return (
     <>
       <PageHero
-        eyebrow="What we do"
-        title={
-          <>
-            Complex problems.
-            <br />
-            <span>Clear solutions.</span>
-          </>
-        }
+        eyebrow="Our expertise"
+        title={<>Engineering that<br /><span>moves you forward.</span></>}
       >
-        We design and engineer software that makes a meaningful difference, from
-        a smarter workflow to a product ready for its first customers.
+        From AI automation to full product engineering, we bring the right
+        people, architecture, and execution to each challenge.
       </PageHero>
-      <section id="ai" className="section section-tight">
+      <section className="section services-expertise">
         <div className="container">
           <SectionHeading
-            eyebrow="AI & intelligent systems"
-            title="Make AI useful, safe, and part of the work."
+            eyebrow="What we build"
+            title="Six disciplines. One accountable team."
           >
-            From practical scripts and automations to agents that can use tools
-            inside your software, we focus on outcomes your team can trust.
+            Choose the capability that fits your next move. Each service is
+            designed to work on its own or connect into a complete product.
           </SectionHeading>
-          <div className="service-grid">
-            {serviceItems.slice(0, 2).map((item, index) => (
-              <ServiceCard item={item} index={index} key={item.number} />
-            ))}
-          </div>
-          <div className="feature-strip reveal">
-            <div className="feature-strip-icon">
-              <Icon name="wrench" size={22} />
-            </div>
-            <div>
-              <h3>Connected to the tools you already use</h3>
-              <p>
-                We integrate third-party services and APIs, write purpose-built
-                scripts, and keep humans in the loop wherever a decision needs
-                care.
-              </p>
-            </div>
-            <a className="text-link" href="contact.html">
-              Discuss an automation <Icon name="arrow" size={17} />
-            </a>
-          </div>
-        </div>
-      </section>
-      <section id="products" className="section section-darker">
-        <div className="container">
-          <SectionHeading
-            eyebrow="SaaS & product development"
-            title="A strong foundation for the product you imagine."
-          >
-            We work with you from early product decisions through launch,
-            shaping every detail around the people who will use it.
-          </SectionHeading>
-          <div className="service-grid">
-            {serviceItems.slice(2, 3).map((item, index) => (
-              <ServiceCard item={item} index={index} key={item.number} />
-            ))}
-          </div>
-          <div className="product-pillars">
-            {[
-              [
-                "01",
-                "Product strategy",
-                "Scope the right first version and set a clear direction.",
-              ],
-              [
-                "02",
-                "Full-stack engineering",
-                "Build a secure, maintainable product that feels effortless.",
-              ],
-              [
-                "03",
-                "Launch & evolve",
-                "Learn from real users and grow the product with purpose.",
-              ],
-            ].map(([number, title, text]) => (
-              <div className="pillar reveal" key={number}>
-                <span>{number}</span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section id="engineering" className="section">
-        <div className="container">
-          <SectionHeading
-            eyebrow="Web, mobile & custom software"
-            title="Built around your users. Ready for the real world."
-          >
-            Beautiful interfaces matter. So do fast load times, sensible
-            architecture, accessibility, and a codebase your team can build on.
-          </SectionHeading>
-          <div className="service-grid">
-            {serviceItems.slice(3).map((item, index) => (
-              <ServiceCard item={item} index={index} key={item.number} />
-            ))}
-          </div>
+          <ServicesTimeline />
         </div>
       </section>
       <section className="section section-darker services-work">
@@ -1020,135 +2017,135 @@ function ServicesPage() {
         </div>
       </section>
       <CTA
-        title="Not sure where to start?"
-        text="Describe the challenge in your own words. We will help you work out what to build and what to leave out."
-        button="Talk to an engineer"
+        title="Ready to leverage our expertise?"
+        text="Tell us what you are building. We will help you choose the right next step."
+        button="Get in touch"
       />
     </>
   );
 }
 
-function AboutPage() {
-  const values = [
-    [
-      "01",
-      "Start with the problem",
-      "We listen, ask better questions, and make sure the work is solving the right thing before we write code.",
-    ],
-    [
-      "02",
-      "Keep it understandable",
-      "Clear decisions and open communication mean you always know what is happening and why.",
-    ],
-    [
-      "03",
-      "Build for the long run",
-      "We ship thoughtful, maintainable software your team can own, extend, and trust.",
-    ],
-  ];
+const coreTeam = [
+  { name: "Jordan Blake", role: "Engineering Lead", variant: "one", initials: "JB" },
+  { name: "Sam Taylor", role: "AI Systems Engineer", variant: "two", initials: "ST" },
+  { name: "Avery Morgan", role: "Product Engineer", variant: "three", initials: "AM" },
+  { name: "Casey Reed", role: "Delivery & Operations", variant: "four", initials: "CR" },
+];
+
+const extendedTeam = [
+  { name: "Riley Parker", role: "Software Engineer", variant: "five", initials: "RP" },
+  { name: "Morgan Ellis", role: "AI Product Specialist", variant: "six", initials: "ME" },
+];
+
+const teamValues = [
+  {
+    icon: "spark",
+    title: "Move with intent",
+    text: "Make clear decisions, focus on what matters, and keep useful work moving.",
+  },
+  {
+    icon: "check",
+    title: "Secure by default",
+    text: "Treat privacy, safety, and reliability as foundations—not finishing touches.",
+  },
+  {
+    icon: "orbit",
+    title: "Think beyond today",
+    text: "Build with a wider perspective and create products ready to grow across markets.",
+  },
+  {
+    icon: "layers",
+    title: "Work as partners",
+    text: "Share context, stay accountable, and build alongside the people who use the result.",
+  },
+];
+
+function TeamMemberCard({ member, index, extended = false }) {
+  return (
+    <article
+      className={`team-member-card reveal${extended ? " is-extended" : ""}`}
+      style={{ "--reveal-delay": `${(index % 4) * 80}ms` }}
+    >
+      <div className={`team-member-photo photo-${member.variant}`} role="img" aria-label="Team member image placeholder">
+        <span className="team-photo-initials">{member.initials}</span>
+        <span className="team-photo-placeholder">Portrait placeholder</span>
+      </div>
+      <div className="team-member-caption">
+        <h3>{member.name}</h3>
+        <p>{member.role}</p>
+      </div>
+    </article>
+  );
+}
+
+function TeamPage() {
   return (
     <>
       <PageHero
-        eyebrow="About FutureSort"
-        title={
-          <>
-            We sort the signal
-            <br />
-            from the <span>noise.</span>
-          </>
-        }
+        eyebrow="Meet the team"
+        title={<>The <span>masterminds.</span></>}
       >
-        We are a focused software and AI engineering team helping ambitious
-        people turn complicated ideas into clear, useful products.
+        Meet the people behind our engineering work: a focused team building
+        useful software, practical AI, and meaningful partnerships.
       </PageHero>
-      <section className="section section-tight">
-        <div className="container about-intro">
-          <div className="about-heading reveal">
-            <span className="eyebrow">
-              <span className="eyebrow-dot" />
-              Our point of view
-            </span>
-            <h2>Better software begins before the first line of code.</h2>
+      <section className="team-section section-tight">
+        <div className="container">
+          <div className="team-section-heading reveal">
+            <div>
+              <span className="eyebrow"><span className="eyebrow-dot" />Core enterprise team</span>
+              <h2>One team, built around delivery.</h2>
+            </div>
+            <span className="team-section-meta">People behind the work</span>
           </div>
-          <div className="about-copy reveal">
-            <p>
-              Most teams do not need more tools. They need a clearer way to
-              solve the problem in front of them. FutureSort exists to help find
-              that way, then build the software and systems that make it real.
-            </p>
-            <p>
-              We combine product thinking, strong engineering, and practical AI
-              to help you move forward without adding unnecessary complexity.
-            </p>
-            <a className="text-link" href="services.html">
-              Explore how we work <Icon name="arrow" size={17} />
-            </a>
+          <div className="team-member-grid">
+            {coreTeam.map((member, index) => (
+              <TeamMemberCard member={member} index={index} key={member.name} />
+            ))}
           </div>
         </div>
       </section>
-      <section className="section section-darker">
+      <section className="team-values-section section">
         <div className="container">
-          <SectionHeading
-            eyebrow="What matters to us"
-            title="A few principles we don't compromise on."
-          />
-          <div className="values-grid">
-            {values.map(([number, title, text]) => (
-              <article className="value-card reveal" key={number}>
-                <span>{number}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+          <div className="team-values-heading reveal">
+            <span className="eyebrow"><span className="eyebrow-dot" />Our core values</span>
+            <h2>Principles that guide every build.</h2>
+            <p>The standards behind our decisions, our collaboration, and the work we put into the world.</p>
+          </div>
+          <div className="team-values-grid">
+            {teamValues.map((value, index) => (
+              <article
+                className="team-value-card reveal"
+                style={{ "--reveal-delay": `${index * 75}ms` }}
+                key={value.title}
+              >
+                <span className="team-value-icon"><Icon name={value.icon} size={19} /></span>
+                <h3>{value.title}</h3>
+                <p>{value.text}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
-      <section className="section">
+      <section className="team-extended-section section">
         <div className="container">
-          <div className="team-heading reveal">
-            <span className="eyebrow">
-              <span className="eyebrow-dot" />
-              How we work together
-            </span>
-            <h2>Small team. Thoughtful work. Shared ownership.</h2>
-            <p>
-              FutureSort stays intentionally focused, so the people shaping your
-              plan stay close to the people building it.
-            </p>
+          <div className="team-section-heading reveal">
+            <div>
+              <span className="eyebrow"><span className="eyebrow-dot" />Extended leadership</span>
+              <h2>More minds, working in sync.</h2>
+            </div>
+            <span className="team-section-meta">A wider circle of expertise</span>
           </div>
-          <div className="team-grid">
-            {[
-              [
-                "code",
-                "Product engineering",
-                "Engineers who take responsibility from architecture through to the details people notice.",
-              ],
-              [
-                "orbit",
-                "AI & automation",
-                "Builders who make intelligent systems useful, measurable, and safe to rely on.",
-              ],
-              [
-                "layers",
-                "Product design",
-                "A product-minded perspective that keeps every interface clear, considered, and human.",
-              ],
-            ].map(([icon, title, text]) => (
-              <article className="team-card reveal" key={title}>
-                <div className="team-icon">
-                  <Icon name={icon} size={24} />
-                </div>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </article>
+          <div className="team-member-grid is-extended">
+            {extendedTeam.map((member, index) => (
+              <TeamMemberCard member={member} index={index} extended key={member.name} />
             ))}
           </div>
         </div>
       </section>
       <CTA
-        title="Let's build something that matters."
-        text="We would love to hear what your team is working on and where a little clarity could take you."
-        button="Get in touch"
+        title="Let's build something meaningful."
+        text="Meet the team behind your next product, platform, or intelligent workflow."
+        button="Talk to our team"
       />
     </>
   );
@@ -1623,7 +2620,8 @@ function App() {
     Home: HomePage,
     Services: ServicesPage,
     Portfolio: PortfolioPage,
-    About: AboutPage,
+    Learning: LearningPage,
+    Team: TeamPage,
     Contact: ContactPage,
   }[currentPage];
 
@@ -1631,7 +2629,9 @@ function App() {
     document.title =
       currentPage === "Home"
         ? "FutureSort Technologies — Software & AI Engineering"
-        : `${currentPage} — FutureSort Technologies`;
+        : currentPage === "Learning"
+          ? "AI Engineering Course — FutureSort Learning"
+          : `${currentPage} — FutureSort Technologies`;
     const description = document.querySelector('meta[name="description"]');
     if (description)
       description.setAttribute("content", pageDescriptions[currentPage]);
