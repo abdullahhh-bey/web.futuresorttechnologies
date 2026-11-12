@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { projects } from "./data/projects.js";
+import { teamMembers } from "./data/team.js";
 import logoFull from "../assets/logo-full.png";
 
 const pages = {
@@ -175,6 +176,13 @@ function Icon({ name, size = 25 }) {
       <>
         <circle cx="12" cy="12" r="9" />
         <path d="M12 7v5l3 2" />
+      </>
+    ),
+    linkedin: (
+      <>
+        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+        <rect x="2" y="9" width="4" height="12" />
+        <circle cx="4" cy="4" r="2" />
       </>
     ),
   };
@@ -2116,18 +2124,6 @@ function ServicesPage() {
   );
 }
 
-const coreTeam = [
-  { name: "Jordan Blake", role: "Engineering Lead", variant: "one", initials: "JB" },
-  { name: "Sam Taylor", role: "AI Systems Engineer", variant: "two", initials: "ST" },
-  { name: "Avery Morgan", role: "Product Engineer", variant: "three", initials: "AM" },
-  { name: "Casey Reed", role: "Delivery & Operations", variant: "four", initials: "CR" },
-];
-
-const extendedTeam = [
-  { name: "Riley Parker", role: "Software Engineer", variant: "five", initials: "RP" },
-  { name: "Morgan Ellis", role: "AI Product Specialist", variant: "six", initials: "ME" },
-];
-
 const teamValues = [
   {
     icon: "spark",
@@ -2151,19 +2147,55 @@ const teamValues = [
   },
 ];
 
-function TeamMemberCard({ member, index, extended = false }) {
+function TeamMemberCard({ member, index }) {
+  const [isActive, setIsActive] = useState(false);
+
   return (
     <article
-      className={`team-member-card reveal${extended ? " is-extended" : ""}`}
-      style={{ "--reveal-delay": `${(index % 4) * 80}ms` }}
+      className={`team-member-card reveal${isActive ? " is-active" : ""}`}
+      style={{ "--reveal-delay": `${index * 80}ms` }}
+      onClick={() => setIsActive((prev) => !prev)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setIsActive((prev) => !prev);
+        }
+      }}
+      tabIndex={0}
+      role="region"
+      aria-label={`${member.name}, ${member.position}`}
     >
-      <div className={`team-member-photo photo-${member.variant}`} role="img" aria-label="Team member image placeholder">
-        <span className="team-photo-initials">{member.initials}</span>
-        <span className="team-photo-placeholder">Portrait placeholder</span>
+      <div className="team-member-photo-frame">
+        <img
+          src={member.image}
+          alt={member.alt || `Portrait of ${member.name}, ${member.position} at FutureSort`}
+          width={member.width || 800}
+          height={member.height || 1000}
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="team-member-overlay" aria-hidden={!isActive}>
+          <p className="team-member-overlay-text">{member.description}</p>
+        </div>
       </div>
       <div className="team-member-caption">
-        <h3>{member.name}</h3>
-        <p>{member.role}</p>
+        <div className="team-member-header">
+          <h3 className="team-member-name">{member.name}</h3>
+          {member.linkedin ? (
+            <a
+              href={member.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="team-member-social"
+              aria-label={`${member.name} on LinkedIn`}
+              title={`${member.name} on LinkedIn`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Icon name="linkedin" size={15} />
+            </a>
+          ) : null}
+        </div>
+        <span className="team-member-position">{member.position}</span>
       </div>
     </article>
   );
@@ -2179,18 +2211,18 @@ function TeamPage() {
         Meet the people behind our engineering work: a focused team building
         useful software, practical AI, and meaningful partnerships.
       </PageHero>
-      <section className="team-section section-tight">
+      <section className="team-section section-tight" aria-labelledby="team-heading">
         <div className="container">
           <div className="team-section-heading reveal">
-            <div>
-              <span className="eyebrow"><span className="eyebrow-dot" />Core enterprise team</span>
-              <h2>One team, built around delivery.</h2>
-            </div>
-            <span className="team-section-meta">People behind the work</span>
+            <span className="eyebrow"><span className="eyebrow-dot" />The team</span>
+            <h2 id="team-heading">The minds behind FutureSort</h2>
+            <p className="team-section-sub">
+              A focused engineering team combining research rigor, full-stack craft, and practical AI delivery.
+            </p>
           </div>
           <div className="team-member-grid">
-            {coreTeam.map((member, index) => (
-              <TeamMemberCard member={member} index={index} key={member.name} />
+            {teamMembers.map((member, index) => (
+              <TeamMemberCard member={member} index={index} key={member.id || member.name} />
             ))}
           </div>
         </div>
@@ -2213,22 +2245,6 @@ function TeamPage() {
                 <h3>{value.title}</h3>
                 <p>{value.text}</p>
               </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="team-extended-section section">
-        <div className="container">
-          <div className="team-section-heading reveal">
-            <div>
-              <span className="eyebrow"><span className="eyebrow-dot" />Extended leadership</span>
-              <h2>More minds, working in sync.</h2>
-            </div>
-            <span className="team-section-meta">A wider circle of expertise</span>
-          </div>
-          <div className="team-member-grid is-extended">
-            {extendedTeam.map((member, index) => (
-              <TeamMemberCard member={member} index={index} extended key={member.name} />
             ))}
           </div>
         </div>
