@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { projects } from "./data/projects.js";
 import logoFull from "../assets/logo-full.png";
 
@@ -17,7 +17,7 @@ const pageDescriptions = {
   Services:
     "AI automation, agentic AI, SaaS product development, and web and mobile app engineering from FutureSort Technologies.",
   Portfolio:
-    "Representative software, SaaS, and AI automation concepts from FutureSort Technologies.",
+    "Explore software, SaaS, AI, and mobile product case studies from FutureSort Technologies.",
   Learning:
     "Explore FutureSort Technologies' two-month AI engineering course and register for a free demo class.",
   Team:
@@ -126,6 +126,12 @@ function Icon({ name, size = 25 }) {
         <path d="M5 12h14M13 6l6 6-6 6" />
       </>
     ),
+    search: (
+      <>
+        <circle cx="10.8" cy="10.8" r="6.8" />
+        <path d="m16 16 4.5 4.5" />
+      </>
+    ),
     check: <path d="m5 12 4 4L19 6" />,
     chart: (
       <>
@@ -142,6 +148,12 @@ function Icon({ name, size = 25 }) {
     close: (
       <>
         <path d="m6 6 12 12M18 6 6 18" />
+      </>
+    ),
+    lock: (
+      <>
+        <rect x="4" y="10" width="16" height="11" rx="2" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
       </>
     ),
     mail: (
@@ -247,7 +259,11 @@ function Header({ currentPage }) {
             href="index.html"
             aria-label="FutureSort Technologies home"
           >
-            <img src={logoFull} alt="FutureSort Technologies" />
+            <span
+              className="brand-image"
+              style={{ "--logo-mask": `url("${logoFull}")` }}
+              aria-hidden="true"
+            />
           </a>
           <nav
             id="primary-navigation"
@@ -803,12 +819,12 @@ function BrainVisual() {
   const sparkSequenceRef = useRef(0);
   const [activeSpark, setActiveSpark] = useState(null);
   const capabilities = [
-    { title: "LLMs", className: "brain-tag-llm" },
-    { title: "Agentic AI", className: "brain-tag-agents" },
-    { title: "AI Architecture", className: "brain-tag-architecture" },
-    { title: "RAG Systems", className: "brain-tag-rag" },
-    { title: "AI Automation", className: "brain-tag-automation" },
-    { title: "AI Integrations", className: "brain-tag-integrations" },
+    { title: "LLMs", className: "brain-tag-llm", source: [0.34, 0.37] },
+    { title: "Agentic AI", className: "brain-tag-agents", source: [0.68, 0.35] },
+    { title: "AI Architecture", className: "brain-tag-architecture", source: [0.62, 0.5] },
+    { title: "RAG Systems", className: "brain-tag-rag", source: [0.68, 0.61] },
+    { title: "AI Automation", className: "brain-tag-automation", source: [0.35, 0.61] },
+    { title: "AI Integrations", className: "brain-tag-integrations", source: [0.28, 0.49] },
   ];
 
   useEffect(() => {
@@ -816,154 +832,222 @@ function BrainVisual() {
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return undefined;
     let resizeObserver;
+    let frame = 0;
+    let points = [];
+    let width = 0;
+    let height = 0;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let brainPath;
+    let cerebellumPath;
+    let stemPath;
 
-    const render = () => {
+    const createBrainShapes = (scale, centerX, centerY) => {
+      brainPath = new Path2D();
+      cerebellumPath = new Path2D();
+      stemPath = new Path2D();
+      const px = (value) => centerX + value * scale;
+      const py = (value) => centerY + value * scale;
+
+      brainPath.moveTo(px(-0.88), py(0.1));
+      brainPath.bezierCurveTo(px(-1.02), py(-0.05), px(-0.98), py(-0.29), px(-0.79), py(-0.38));
+      brainPath.bezierCurveTo(px(-0.74), py(-0.56), px(-0.54), py(-0.62), px(-0.36), py(-0.53));
+      brainPath.bezierCurveTo(px(-0.22), py(-0.66), px(0.02), py(-0.65), px(0.18), py(-0.53));
+      brainPath.bezierCurveTo(px(0.37), py(-0.62), px(0.58), py(-0.52), px(0.66), py(-0.37));
+      brainPath.bezierCurveTo(px(0.86), py(-0.36), px(0.98), py(-0.19), px(0.91), py(-0.02));
+      brainPath.bezierCurveTo(px(1.01), py(0.15), px(0.89), py(0.32), px(0.72), py(0.36));
+      brainPath.bezierCurveTo(px(0.65), py(0.5), px(0.45), py(0.53), px(0.28), py(0.42));
+      brainPath.bezierCurveTo(px(0.09), py(0.53), px(-0.12), py(0.5), px(-0.28), py(0.39));
+      brainPath.bezierCurveTo(px(-0.45), py(0.47), px(-0.64), py(0.36), px(-0.7), py(0.24));
+      brainPath.bezierCurveTo(px(-0.83), py(0.28), px(-0.94), py(0.22), px(-0.88), py(0.1));
+      brainPath.closePath();
+
+      cerebellumPath.moveTo(px(0.44), py(0.35));
+      cerebellumPath.bezierCurveTo(px(0.56), py(0.31), px(0.75), py(0.35), px(0.81), py(0.45));
+      cerebellumPath.bezierCurveTo(px(0.91), py(0.49), px(0.88), py(0.63), px(0.76), py(0.65));
+      cerebellumPath.bezierCurveTo(px(0.67), py(0.72), px(0.49), py(0.66), px(0.45), py(0.58));
+      cerebellumPath.bezierCurveTo(px(0.36), py(0.52), px(0.37), py(0.41), px(0.44), py(0.35));
+      cerebellumPath.closePath();
+
+      stemPath.moveTo(px(0.27), py(0.35));
+      stemPath.bezierCurveTo(px(0.35), py(0.39), px(0.39), py(0.48), px(0.36), py(0.57));
+      stemPath.bezierCurveTo(px(0.35), py(0.66), px(0.42), py(0.72), px(0.39), py(0.8));
+      stemPath.bezierCurveTo(px(0.37), py(0.86), px(0.25), py(0.86), px(0.23), py(0.79));
+      stemPath.bezierCurveTo(px(0.22), py(0.69), px(0.16), py(0.63), px(0.18), py(0.54));
+      stemPath.bezierCurveTo(px(0.18), py(0.45), px(0.19), py(0.38), px(0.27), py(0.35));
+      stemPath.closePath();
+    };
+
+    const createPoints = () => {
       const bounds = canvas.getBoundingClientRect();
-      const width = bounds.width;
-      const height = bounds.height;
+      width = bounds.width;
+      height = bounds.height;
       if (!width || !height) return;
 
       const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      context.clearRect(0, 0, width, height);
-
-      const scale = Math.min(width * 0.47, height * 0.66);
+      points = [];
+      const scale = Math.min(width * 0.4, height * 0.56);
       const centerX = width * 0.5;
       const centerY = height * 0.45;
+      createBrainShapes(scale, centerX, centerY);
       const px = (value) => centerX + value * scale;
       const py = (value) => centerY + value * scale;
-      const brain = new Path2D();
 
-      brain.moveTo(px(-0.91), py(0.03));
-      brain.bezierCurveTo(px(-0.96), py(-0.13), px(-0.84), py(-0.34), px(-0.66), py(-0.37));
-      brain.bezierCurveTo(px(-0.61), py(-0.53), px(-0.4), py(-0.58), px(-0.25), py(-0.49));
-      brain.bezierCurveTo(px(-0.12), py(-0.62), px(0.1), py(-0.61), px(0.23), py(-0.49));
-      brain.bezierCurveTo(px(0.39), py(-0.57), px(0.59), py(-0.47), px(0.65), py(-0.34));
-      brain.bezierCurveTo(px(0.84), py(-0.34), px(0.96), py(-0.17), px(0.93), py(0.01));
-      brain.bezierCurveTo(px(1.02), py(0.15), px(0.91), py(0.31), px(0.76), py(0.34));
-      brain.bezierCurveTo(px(0.69), py(0.48), px(0.51), py(0.51), px(0.37), py(0.41));
-      brain.bezierCurveTo(px(0.23), py(0.52), px(0.04), py(0.49), px(-0.08), py(0.39));
-      brain.bezierCurveTo(px(-0.26), py(0.48), px(-0.44), py(0.38), px(-0.52), py(0.29));
-      brain.bezierCurveTo(px(-0.72), py(0.31), px(-0.88), py(0.21), px(-0.91), py(0.03));
-      brain.closePath();
-
-      const halo = context.createRadialGradient(
-        centerX, centerY, scale * 0.12, centerX, centerY, scale * 1.1,
-      );
-      halo.addColorStop(0, "rgba(60, 211, 206, .13)");
-      halo.addColorStop(1, "rgba(8, 11, 17, 0)");
-      context.fillStyle = halo;
-      context.fillRect(0, 0, width, height);
-
-      context.save();
-      context.shadowColor = "rgba(76, 222, 216, .55)";
-      context.shadowBlur = 20;
-      const fill = context.createLinearGradient(px(-0.8), py(-0.55), px(0.75), py(0.5));
-      fill.addColorStop(0, "rgba(50, 79, 91, .94)");
-      fill.addColorStop(0.48, "rgba(24, 42, 52, .97)");
-      fill.addColorStop(1, "rgba(13, 25, 35, .97)");
-      context.fillStyle = fill;
-      context.fill(brain);
-      context.restore();
-
-      context.save();
-      context.clip(brain);
-      const grooves = [
-        [-0.77, -0.02, -0.76, -0.28, -0.53, -0.26, -0.47, -0.08],
-        [-0.63, -0.32, -0.43, -0.42, -0.3, -0.3, -0.39, -0.15],
-        [-0.36, -0.46, -0.2, -0.54, -0.04, -0.34, -0.2, -0.2],
-        [-0.13, -0.52, 0.03, -0.59, 0.17, -0.39, 0.02, -0.26],
-        [0.19, -0.47, 0.35, -0.55, 0.49, -0.37, 0.33, -0.19],
-        [0.55, -0.36, 0.75, -0.36, 0.83, -0.17, 0.67, -0.04],
-        [-0.78, 0.11, -0.63, 0.03, -0.5, 0.12, -0.55, 0.24],
-        [-0.43, 0.03, -0.32, -0.11, -0.15, 0.01, -0.25, 0.26],
-        [-0.08, -0.15, 0.11, -0.27, 0.28, -0.07, 0.17, 0.12],
-        [0.37, -0.13, 0.51, -0.3, 0.67, -0.13, 0.53, 0.06],
-        [0.73, 0.11, 0.65, 0.25, 0.48, 0.19, 0.42, 0.34],
-        [-0.36, 0.25, -0.23, 0.1, -0.07, 0.18, -0.16, 0.35],
-        [0.02, 0.22, 0.17, 0.1, 0.31, 0.25, 0.22, 0.37],
-      ];
-      grooves.forEach(([sx, sy, c1x, c1y, c2x, c2y, ex, ey], index) => {
-        context.beginPath();
-        context.moveTo(px(sx), py(sy));
-        context.bezierCurveTo(px(c1x), py(c1y), px(c2x), py(c2y), px(ex), py(ey));
-        context.strokeStyle = index % 2
-          ? "rgba(130, 212, 216, .33)"
-          : "rgba(3, 13, 22, .62)";
-        context.lineWidth = index % 3 === 0 ? 2 : 1.25;
-        context.lineCap = "round";
-        context.stroke();
-      });
-
-      const points = [];
       let seed = 193;
       const random = () => {
         seed = (seed * 16807) % 2147483647;
         return (seed - 1) / 2147483646;
       };
-      for (let attempt = 0; attempt < 1200 && points.length < 190; attempt += 1) {
-        const x = px(-0.92 + random() * 1.88);
-        const y = py(-0.58 + random() * 1.12);
-        if (context.isPointInPath(brain, x, y)) points.push({ x, y });
-      }
-
-      context.lineWidth = 0.75;
-      for (let index = 0; index < points.length; index += 1) {
-        const point = points[index];
-        let links = 0;
-        for (let otherIndex = index + 1; otherIndex < points.length && links < 4; otherIndex += 1) {
-          const other = points[otherIndex];
-          const dx = point.x - other.x;
-          const dy = point.y - other.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance > 16 && distance < Math.min(width, height) * 0.105) {
-            context.beginPath();
-            context.moveTo(point.x, point.y);
-            context.lineTo(other.x, other.y);
-            context.strokeStyle = `rgba(208, 235, 239, ${0.42 * (1 - distance / (Math.min(width, height) * 0.14))})`;
-            context.stroke();
-            links += 1;
-          }
+      const shapes = [
+        { path: brainPath, count: 260, hue: "white" },
+        { path: cerebellumPath, count: 54, hue: "cyan" },
+        { path: stemPath, count: 30, hue: "cyan" },
+      ];
+      shapes.forEach(({ path, count, hue }) => {
+        let attempts = 0;
+        let accepted = 0;
+        while (accepted < count && attempts < count * 30) {
+          attempts += 1;
+          const x = width * 0.5 + (random() * 2 - 1) * scale;
+          const y = centerY + (random() * 2 - 1) * scale * 0.9;
+          if (!context.isPointInPath(path, x, y)) continue;
+          const localX = (x - centerX) / scale;
+          const localY = (y - centerY) / scale;
+          const grooveWave = Math.sin(localX * 14 + localY * 4) * 0.09;
+          if (path === brainPath && random() < 0.22 && Math.abs(localY - grooveWave) < 0.034) continue;
+          points.push({
+            x,
+            y,
+            radius: hue === "cyan" ? 1 + random() * 0.75 : 0.75 + random() * 0.85,
+            phase: random() * Math.PI * 2,
+            speed: 0.7 + random() * 1.2,
+            brightness: 0.42 + random() * 0.52,
+            hue,
+          });
+          accepted += 1;
         }
-      }
-
-      points.forEach((point, index) => {
-        context.beginPath();
-        context.arc(point.x, point.y, index % 11 === 0 ? 1.65 : 1.1, 0, Math.PI * 2);
-        context.fillStyle = index % 13 === 0 ? "#70e9ee" : "rgba(245, 253, 255, .94)";
-        context.fill();
       });
-      context.restore();
 
-      context.beginPath();
-      context.moveTo(px(0.48), py(0.38));
-      context.bezierCurveTo(px(0.55), py(0.48), px(0.62), py(0.57), px(0.69), py(0.63));
-      context.quadraticCurveTo(px(0.73), py(0.67), px(0.76), py(0.61));
-      context.strokeStyle = "rgba(218, 243, 246, .8)";
-      context.lineWidth = 1.25;
-      context.stroke();
-      context.beginPath();
-      context.strokeStyle = "rgba(230, 249, 250, .85)";
-      context.lineWidth = 1.4;
-      context.shadowColor = "rgba(83, 227, 222, .58)";
-      context.shadowBlur = 9;
-      context.stroke(brain);
-      context.shadowBlur = 0;
+      const outlineSegments = [
+        [-0.88, 0.1, -1.02, -0.05, -0.98, -0.29, -0.79, -0.38],
+        [-0.79, -0.38, -0.74, -0.56, -0.54, -0.62, -0.36, -0.53],
+        [-0.36, -0.53, -0.22, -0.66, 0.02, -0.65, 0.18, -0.53],
+        [0.18, -0.53, 0.37, -0.62, 0.58, -0.52, 0.66, -0.37],
+        [0.66, -0.37, 0.86, -0.36, 0.98, -0.19, 0.91, -0.02],
+        [0.91, -0.02, 1.01, 0.15, 0.89, 0.32, 0.72, 0.36],
+        [0.72, 0.36, 0.65, 0.5, 0.45, 0.53, 0.28, 0.42],
+        [0.28, 0.42, 0.09, 0.53, -0.12, 0.5, -0.28, 0.39],
+        [-0.28, 0.39, -0.45, 0.47, -0.64, 0.36, -0.7, 0.24],
+        [-0.7, 0.24, -0.83, 0.28, -0.94, 0.22, -0.88, 0.1],
+      ];
+      outlineSegments.forEach(([sx, sy, c1x, c1y, c2x, c2y, ex, ey]) => {
+        for (let index = 0; index < 14; index += 1) {
+          const t = index / 14;
+          const inverse = 1 - t;
+          points.push({
+            x: px(
+              inverse ** 3 * sx +
+              3 * inverse ** 2 * t * c1x +
+              3 * inverse * t ** 2 * c2x +
+              t ** 3 * ex,
+            ),
+            y: py(
+              inverse ** 3 * sy +
+              3 * inverse ** 2 * t * c1y +
+              3 * inverse * t ** 2 * c2y +
+              t ** 3 * ey,
+            ),
+            radius: 1 + random() * 0.7,
+            phase: random() * Math.PI * 2,
+            speed: 0.9 + random() * 1.1,
+            brightness: 0.66 + random() * 0.32,
+            hue: index % 4 === 0 ? "cyan" : "white",
+          });
+        }
+      });
+
+      const grooves = [
+        [-0.82, -0.04, -0.77, -0.23, -0.52, -0.24, -0.48, -0.1],
+        [-0.6, -0.34, -0.43, -0.45, -0.29, -0.28, -0.38, -0.11],
+        [-0.34, -0.43, -0.17, -0.55, -0.03, -0.33, -0.18, -0.18],
+        [-0.12, -0.5, 0.02, -0.58, 0.15, -0.38, 0.03, -0.25],
+        [0.19, -0.45, 0.36, -0.52, 0.49, -0.33, 0.34, -0.18],
+        [0.56, -0.33, 0.75, -0.34, 0.81, -0.15, 0.66, -0.02],
+        [-0.43, 0.04, -0.26, -0.1, -0.1, 0.02, -0.23, 0.25],
+        [-0.06, -0.12, 0.13, -0.25, 0.28, -0.06, 0.14, 0.12],
+        [0.38, -0.1, 0.52, -0.24, 0.66, -0.1, 0.51, 0.1],
+        [0.68, 0.1, 0.62, 0.22, 0.48, 0.2, 0.42, 0.33],
+      ];
+      grooves.forEach(([sx, sy, c1x, c1y, c2x, c2y, ex, ey]) => {
+        for (let index = 0; index < 24; index += 1) {
+          const t = (index + random() * 0.8) / 24;
+          const inverse = 1 - t;
+          const x = px(
+            inverse ** 3 * sx +
+            3 * inverse ** 2 * t * c1x +
+            3 * inverse * t ** 2 * c2x +
+            t ** 3 * ex,
+          );
+          const y = py(
+            inverse ** 3 * sy +
+            3 * inverse ** 2 * t * c1y +
+            3 * inverse * t ** 2 * c2y +
+            t ** 3 * ey,
+          );
+          if (!context.isPointInPath(brainPath, x, y)) continue;
+          points.push({
+            x,
+            y,
+            radius: 0.65 + random() * 0.5,
+            phase: random() * Math.PI * 2,
+            speed: 0.8 + random() * 1.4,
+            brightness: 0.5 + random() * 0.42,
+            hue: "cyan",
+          });
+        }
+      });
     };
 
-    render();
+    const render = (time = 0) => {
+      context.clearRect(0, 0, width, height);
+      points.forEach((point) => {
+        const pulse = (Math.sin(time * 0.001 * point.speed + point.phase) + 1) / 2;
+        const alpha = point.brightness * (0.62 + pulse * 0.38);
+        const radius = point.radius * (0.8 + pulse * 0.38);
+        context.beginPath();
+        context.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        context.fillStyle = point.hue === "cyan"
+          ? `rgba(105, 242, 235, ${alpha})`
+          : `rgba(222, 247, 249, ${alpha})`;
+        if (pulse > 0.88) {
+          context.shadowColor = point.hue === "cyan" ? "#56fff0" : "#c8ffff";
+          context.shadowBlur = point.hue === "cyan" ? 11 : 7;
+        }
+        context.fill();
+        context.shadowBlur = 0;
+      });
+      if (!reducedMotion) frame = window.requestAnimationFrame(render);
+    };
+
+    const resize = () => {
+      window.cancelAnimationFrame(frame);
+      createPoints();
+      render();
+    };
+    resize();
     if ("ResizeObserver" in window) {
-      resizeObserver = new ResizeObserver(render);
-      resizeObserver.observe(canvas);
+      resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(canvas.parentElement);
     } else {
-      window.addEventListener("resize", render);
+      window.addEventListener("resize", resize);
     }
 
     return () => {
       resizeObserver?.disconnect();
-      window.removeEventListener("resize", render);
+      window.removeEventListener("resize", resize);
+      window.cancelAnimationFrame(frame);
     };
   }, []);
 
@@ -972,8 +1056,11 @@ function BrainVisual() {
     const bounds = visual?.getBoundingClientRect();
     if (!visual || !bounds) return;
     const tagBounds = event.currentTarget.getBoundingClientRect();
-    const startX = bounds.width / 2;
-    const startY = bounds.height * 0.45;
+    const capability = capabilities.find((item) => item.title === event.currentTarget.dataset.capability);
+    if (!capability) return;
+    const [sourceX, sourceY] = capability.source;
+    const startX = bounds.width * sourceX;
+    const startY = bounds.height * sourceY;
     const endX = tagBounds.left + tagBounds.width / 2 - bounds.left;
     const endY = tagBounds.top + tagBounds.height / 2 - bounds.top;
     const path = `M ${startX} ${startY} Q ${startX + (endX - startX) * 0.52} ${startY + (endY - startY) * 0.42 - 28} ${endX} ${endY}`;
@@ -993,8 +1080,7 @@ function BrainVisual() {
   useEffect(() => () => window.clearTimeout(sparkTimerRef.current), []);
 
   return (
-    <div className="brain-visual" role="group" aria-label="Illustrated neural brain and AI capabilities">
-      <div className="brain-aura" aria-hidden="true" />
+    <div className="brain-visual" role="group" aria-label="A brain formed from glowing particles and AI capabilities">
       <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
       <span className="brain-caption"><span className="brain-caption-dot" />Intelligence, by design</span>
       {activeSpark && (
@@ -1020,6 +1106,7 @@ function BrainVisual() {
           type="button"
           className={`brain-tag ${capability.className}`}
           key={capability.title}
+          data-capability={capability.title}
           style={{ "--tag-delay": `${index * -0.65}s` }}
           onPointerEnter={sparkToCapability}
           onFocus={sparkToCapability}
@@ -1449,9 +1536,9 @@ function ReviewsSection() {
       <div className="container">
         <div className="reviews-heading reveal">
           <div>
-            <span className="eyebrow"><span className="eyebrow-dot" />Client voices</span>
-            <h2 id="reviews-title">Good work speaks for itself.</h2>
-            <p>These are clearly marked content slots, ready for approved client feedback.</p>
+            <span className="eyebrow"><span className="eyebrow-dot" />Client reviews</span>
+            <h2 id="reviews-title">What our clients say.</h2>
+            <p>Genuine client feedback will appear here once reviews are approved for publication.</p>
           </div>
           <div className="reviews-controls">
             <span className="reviews-count">{String(activeReview + 1).padStart(2, "0")} <i>/</i> {String(reviewPlaceholders.length).padStart(2, "0")}</span>
@@ -1507,7 +1594,11 @@ function Footer() {
         <div className="footer-grid">
           <div className="footer-brand">
             <a href="index.html" aria-label="FutureSort Technologies home">
-              <img src={logoFull} alt="FutureSort Technologies" />
+              <span
+                className="brand-image"
+                style={{ "--logo-mask": `url("${logoFull}")` }}
+                aria-hidden="true"
+              />
             </a>
             <p>
               Thoughtful software and practical AI for teams building what comes
@@ -2201,36 +2292,11 @@ function ProjectCard({ project, index }) {
               <span className="image-zoom-hint">View screenshot <span aria-hidden="true">↗</span></span>
             </button>
           ) : (
-            <>
-              <div className="visual-orbit" />
-              <div className="visual-orbit visual-orbit-small" />
-              <div className="visual-window">
-                <div className="window-top">
-                  <span />
-                  <span />
-                  <span />
-                  <i>{project.category.split(" · ")[0]}</i>
-                </div>
-                <div className="window-content">
-                  <span className="window-icon">
-                    <Icon name={service?.icon || "layers"} size={20} />
-                  </span>
-                  <div className="window-lines">
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                  <div className="window-chart">
-                    {Array.from({ length: 7 }, (_, barIndex) => (
-                      <span key={barIndex} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <span className="visual-index">{String(index + 1).padStart(2, "0")}</span>
-            </>
+            <div className="project-empty-visual">
+              <Icon name={service?.icon || "layers"} size={23} />
+              <span>Project image coming soon</span>
+            </div>
           )}
-          {project.isConcept && <span className="concept-badge">Concept preview</span>}
           {images.length > 1 && (
             <div className="project-thumbnails" aria-label={`${project.title} screenshots`}>
               {images.map((image, imageIndex) => (
@@ -2256,7 +2322,7 @@ function ProjectCard({ project, index }) {
         <div className="project-copy">
           <span className="project-category">{project.category}</span>
           <h3>{project.title}</h3>
-          <p>{project.description}</p>
+          <p>{project.description || project.tagline}</p>
           <div className="project-card-footer">
             <div className="project-meta">
               <span>{service?.title || "Software development"}</span>
@@ -2301,111 +2367,109 @@ function ProjectCard({ project, index }) {
 }
 
 function PortfolioPage() {
-  const validServiceIds = ["all", ...serviceItems.map((item) => item.id)];
-  const [activeService, setActiveService] = useState(() => {
+  const portfolioPathMatch = window.location.pathname.match(/^\/portfolio\/([^/]+)\/?$/);
+  const projectSlug = portfolioPathMatch
+    ? decodeURIComponent(portfolioPathMatch[1])
+    : new URLSearchParams(window.location.search).get("project");
+  const selectedProject = projects.find((project) => project.slug === projectSlug);
+  if (projectSlug) {
+    return selectedProject
+      ? <ProjectDetail project={selectedProject} />
+      : <ProjectNotFound />;
+  }
+  return <ProjectGridPage />;
+}
+
+function projectHref(project) {
+  return `/portfolio/${encodeURIComponent(project.slug)}/`;
+}
+
+function isPlaceholderValue(value) {
+  return typeof value === "string" &&
+    (/^\s*\[[^\]]+\]\s*$/.test(value) || /\[ADD/i.test(value));
+}
+
+function getProjectStack(project) {
+  if (Array.isArray(project.stack)) return project.stack;
+  return Object.values(project.stack).flat();
+}
+
+function getProjectStackGroups(project) {
+  if (project.stackGroups) return project.stackGroups;
+  const groupLabels = { ai: "AI models" };
+  return Object.fromEntries(
+    Object.entries(project.stack).map(([group, items]) => [
+      groupLabels[group] || `${group[0].toUpperCase()}${group.slice(1)}`,
+      items,
+    ]),
+  );
+}
+
+function ProjectGridPage() {
+  const categories = [...new Set(projects.map((project) => project.category))];
+  const orderedProjects = [...projects].sort((a, b) => Number(b.featured) - Number(a.featured));
+  const [activeCategory, setActiveCategory] = useState(() => {
+    const requestedCategory = new URLSearchParams(window.location.search).get("category");
     const requestedService = new URLSearchParams(window.location.search).get("service");
-    return validServiceIds.includes(requestedService) ? requestedService : "all";
+    const legacyCategory = projects.find((project) => project.serviceId === requestedService)?.category;
+    const category = requestedCategory || legacyCategory;
+    return categories.includes(category) ? category : "all";
   });
   const [searchText, setSearchText] = useState("");
-  const filteredProjects = projects.filter((project) => {
-    const matchesService = activeService === "all" || project.serviceId === activeService;
+  const filteredProjects = orderedProjects.filter((project) => {
+    const matchesCategory = activeCategory === "all" || project.category === activeCategory;
     const search = searchText.trim().toLowerCase();
     const matchesSearch = !search || [
       project.title,
+      project.tagline,
       project.category,
-      project.description,
+      project.industry,
+      ...getProjectStack(project),
     ].some((value) => value.toLowerCase().includes(search));
-    return matchesService && matchesSearch;
+    return matchesCategory && matchesSearch;
   });
 
-  const selectService = (serviceId) => {
-    setActiveService(serviceId);
+  const selectCategory = (category) => {
+    setActiveCategory(category);
     const url = new URL(window.location.href);
-    if (serviceId === "all") url.searchParams.delete("service");
-    else url.searchParams.set("service", serviceId);
+    url.searchParams.delete("service");
+    if (category === "all") url.searchParams.delete("category");
+    else url.searchParams.set("category", category);
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
   };
 
   return (
     <>
-      <PageHero
-        eyebrow="Selected work"
-        title={
-          <>
-            Made to solve.
-            <br />
-            <span>Built to last.</span>
-          </>
-        }
-      >
-        A look at the kind of product, software, and AI challenges we love
-        taking on. These illustrative concepts show the range of what we can
-        build.
-      </PageHero>
-      <section className="section section-tight">
+      <section className="page-hero portfolio-hero">
+        <div className="ambient ambient-one" aria-hidden="true" />
+        <div className="ambient ambient-two" aria-hidden="true" />
+        <div className="container page-hero-content portfolio-hero-content">
+          <span className="eyebrow"><span className="eyebrow-dot" />Selected work</span>
+          <h1>Thoughtful software.<br /><span>Measurable impact.</span></h1>
+          <p>Explore the products, platforms, and intelligent workflows behind each case study.</p>
+        </div>
+      </section>
+      <section className="section section-tight portfolio-listing">
         <div className="container">
-          <div className="portfolio-note reveal">
-            <span className="note-icon">
-              <Icon name="spark" size={19} />
-            </span>
-            <p>
-              <strong>Illustrative concepts.</strong> Concept previews are
-              clearly labeled. Add project screenshots, descriptions, and live
-              links as each real project is ready to share.
-            </p>
-          </div>
-          <div className="portfolio-controls">
-            <div className="portfolio-filters" aria-label="Filter projects by service">
-              <button
-                type="button"
-                className={activeService === "all" ? "is-active" : ""}
-                onClick={() => selectService("all")}
-                aria-pressed={activeService === "all"}
-              >
-                All projects <span>{projects.length}</span>
-              </button>
-              {serviceItems.map((item) => {
-                const count = projects.filter((project) => project.serviceId === item.id).length;
-                if (!count) return null;
-                return (
-                  <button
-                    type="button"
-                    className={activeService === item.id ? "is-active" : ""}
-                    key={item.id}
-                    onClick={() => selectService(item.id)}
-                    aria-pressed={activeService === item.id}
-                  >
-                    {item.title} <span>{count}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <label className="portfolio-search">
-              <Icon name="spark" size={17} />
-              <input
-                type="search"
-                placeholder="Find a project"
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                aria-label="Search projects"
-              />
-            </label>
-          </div>
+          <ProjectFilters
+            categories={categories}
+            projects={projects}
+            activeCategory={activeCategory}
+            onSelectCategory={selectCategory}
+            searchText={searchText}
+            onSearchTextChange={setSearchText}
+          />
           <p className="portfolio-result-count" aria-live="polite">
             Showing {filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"}
           </p>
           {filteredProjects.length ? (
-            <div className="project-grid">
-              {filteredProjects.map((project, index) => (
-                <ProjectCard project={project} index={index} key={project.id} />
-              ))}
-            </div>
+            <ProjectGrid projects={filteredProjects} />
           ) : (
             <div className="portfolio-empty" role="status">
               <span className="service-icon"><Icon name="layers" size={23} /></span>
               <h2>No matching projects yet</h2>
-              <p>Try a different search or service filter, or get in touch to ask about related work.</p>
-              <button type="button" className="text-link" onClick={() => { setSearchText(""); selectService("all"); }}>
+              <p>Try a different search or category, or get in touch to ask about related work.</p>
+              <button type="button" className="text-link" onClick={() => { setSearchText(""); selectCategory("all"); }}>
                 Show all projects <Icon name="arrow" size={16} />
               </button>
             </div>
@@ -2418,6 +2482,389 @@ function PortfolioPage() {
         button="Start a project"
       />
     </>
+  );
+}
+
+function ProjectFilters({ categories, projects: allProjects, activeCategory, onSelectCategory, searchText, onSearchTextChange }) {
+  const filters = [
+    { label: "All projects", value: "all", count: allProjects.length },
+    ...categories.map((category) => ({
+      label: category,
+      value: category,
+      count: allProjects.filter((project) => project.category === category).length,
+    })),
+  ];
+
+  return (
+    <div className="portfolio-controls">
+      <div className="portfolio-filters" aria-label="Filter projects by category">
+        {filters.map((filter) => (
+          <button
+            type="button"
+            className={activeCategory === filter.value ? "is-active" : ""}
+            key={filter.value}
+            onClick={() => onSelectCategory(filter.value)}
+            aria-pressed={activeCategory === filter.value}
+          >
+            {filter.label} <span>{filter.count}</span>
+          </button>
+        ))}
+      </div>
+      <label className="portfolio-search">
+        <Icon name="search" size={17} />
+        <input
+          type="search"
+          placeholder="Search projects"
+          value={searchText}
+          onChange={(event) => onSearchTextChange(event.target.value)}
+          aria-label="Search projects"
+        />
+      </label>
+    </div>
+  );
+}
+
+function ProjectGrid({ projects: visibleProjects }) {
+  const gridRef = useRef(null);
+  const previousPositions = useRef(new Map());
+
+  useLayoutEffect(() => {
+    const cards = gridRef.current?.querySelectorAll("[data-project-slug]");
+    if (!cards) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const currentPositions = new Map();
+    cards.forEach((card) => {
+      const bounds = card.getBoundingClientRect();
+      currentPositions.set(card.dataset.projectSlug, { x: bounds.left, y: bounds.top });
+      const previous = previousPositions.current.get(card.dataset.projectSlug);
+      if (!reducedMotion && previous) {
+        const deltaX = previous.x - bounds.left;
+        const deltaY = previous.y - bounds.top;
+        if (deltaX || deltaY) {
+          card.animate(
+            [{ transform: `translate(${deltaX}px, ${deltaY}px)` }, { transform: "translate(0, 0)" }],
+            { duration: 280, easing: "ease-out" },
+          );
+        }
+      }
+    });
+    previousPositions.current = currentPositions;
+  }, [visibleProjects]);
+
+  return (
+    <div className="portfolio-project-grid" ref={gridRef}>
+      {visibleProjects.map((project, index) => (
+        <PortfolioProjectCard project={project} index={index} key={project.slug} />
+      ))}
+    </div>
+  );
+}
+
+function PortfolioProjectCard({ project, index }) {
+  const cardRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return undefined;
+    if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setIsVisible(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <article
+      ref={cardRef}
+      className={`portfolio-project-card${isVisible ? " is-visible" : ""}`}
+      data-project-slug={project.slug}
+      style={{ "--card-delay": `${(index % 2) * 60}ms` }}
+    >
+      <a className="portfolio-card-link" href={projectHref(project)} aria-labelledby={`project-title-${project.slug}`}>
+        <div className={`portfolio-browser-frame${project.darkScreenshot ? " is-dark" : ""}`}>
+          <div className="portfolio-browser-bar" aria-hidden="true">
+            <span /><span /><span />
+            <i>{project.slug}.app</i>
+          </div>
+          <img
+            src={project.coverImage}
+            alt={project.coverAlt || `${project.title} product interface`}
+            width="1280"
+            height="800"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div className="portfolio-project-copy">
+          <div className="portfolio-project-labels">
+            <span>{project.category}</span>
+            <span>{project.industry}</span>
+            {project.confidential && (
+              <span className="portfolio-confidential-label"><Icon name="lock" size={13} />Private client system</span>
+            )}
+          </div>
+          <h2 id={`project-title-${project.slug}`}>{project.title}</h2>
+          <p className="portfolio-project-tagline">{project.tagline}</p>
+          <TechStackPills items={project.cardStack || getProjectStack(project).slice(0, 4)} />
+          <span className="portfolio-case-link">View case study <Icon name="arrow" size={16} /></span>
+        </div>
+      </a>
+    </article>
+  );
+}
+
+function TechStackPills({ items, compact = false }) {
+  return (
+    <ul className={`portfolio-stack-pills${compact ? " is-compact" : ""}`}>
+      {items.map((item) => <li key={item}>{item}</li>)}
+    </ul>
+  );
+}
+
+function ProjectDetail({ project }) {
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const lightboxRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const gallery = project.screenshots?.length ? project.screenshots : [project.coverImage];
+  const visibleResults = project.results.filter((result) => !isPlaceholderValue(result));
+  const showRole = project.role && !isPlaceholderValue(project.role);
+  const showTimeline = project.timeline && !isPlaceholderValue(project.timeline);
+  const liveUrl = project.liveUrl && !isPlaceholderValue(project.liveUrl) ? project.liveUrl : null;
+  const repoUrl = project.repoUrl && !isPlaceholderValue(project.repoUrl) ? project.repoUrl : null;
+  const stackGroups = getProjectStackGroups(project);
+  const nextProject = projects[(projects.findIndex((item) => item.slug === project.slug) + 1) % projects.length];
+
+  useEffect(() => {
+    if (lightboxIndex === null) return undefined;
+    const previousFocus = document.activeElement;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setLightboxIndex(null);
+      if (event.key === "ArrowRight") setLightboxIndex((current) => (current + 1) % gallery.length);
+      if (event.key === "ArrowLeft") setLightboxIndex((current) => (current - 1 + gallery.length) % gallery.length);
+      if (event.key === "Tab") {
+        const focusable = lightboxRef.current?.querySelectorAll("button:not([disabled])");
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.body.classList.add("portfolio-lightbox-open");
+    window.addEventListener("keydown", onKeyDown);
+    closeButtonRef.current?.focus();
+    return () => {
+      document.body.classList.remove("portfolio-lightbox-open");
+      window.removeEventListener("keydown", onKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [lightboxIndex !== null]);
+
+  return (
+    <div className="portfolio-detail">
+      <header className="portfolio-detail-hero">
+        <div className="container">
+          <a className="portfolio-back-link" href="portfolio.html"><Icon name="arrow" size={15} />All projects</a>
+          <div className="portfolio-detail-intro">
+            <div>
+              <div className="portfolio-project-labels">
+                <span>{project.category}</span><span>{project.industry}</span>
+                {project.confidential && (
+                  <span className="portfolio-confidential-label"><Icon name="lock" size={13} />Private client system</span>
+                )}
+              </div>
+              <h1>{project.title}</h1>
+              <p>{project.tagline}</p>
+            </div>
+          </div>
+          <div className={`portfolio-detail-cover${project.darkScreenshot ? " is-dark" : ""}`}>
+            <img src={project.coverImage} alt={project.coverAlt || project.imageAlt || `${project.title} product overview`} width="1280" height="800" fetchPriority="high" />
+          </div>
+        </div>
+      </header>
+      <div className="portfolio-detail-content">
+        <section className="portfolio-facts-section">
+          <div className="container portfolio-facts">
+            <div><span>Industry</span><strong>{project.industry}</strong></div>
+            {showRole && <div><span>Role</span><strong>{project.role}</strong></div>}
+            {showTimeline && <div><span>Timeline</span><strong>{project.timeline}</strong></div>}
+            <div className="portfolio-fact-stack"><span>Stack</span><TechStackPills items={getProjectStack(project)} compact /></div>
+          </div>
+        </section>
+        <section className="section portfolio-detail-section">
+          <div className="container portfolio-story-grid">
+            <div className="portfolio-story-heading">
+              <span className="eyebrow"><span className="eyebrow-dot" />The challenge</span>
+              <h2>The problem</h2>
+            </div>
+            <p className="portfolio-story-text">{project.problem}</p>
+          </div>
+        </section>
+        <section className="section section-darker portfolio-detail-section">
+          <div className="container">
+            <div className="portfolio-story-grid portfolio-solution-grid">
+              <div className="portfolio-story-heading">
+                <span className="eyebrow"><span className="eyebrow-dot" />Our approach</span>
+                <h2>The solution</h2>
+                <p className="portfolio-story-text">{project.solution}</p>
+              </div>
+              <div className="portfolio-feature-list">
+                <span className="portfolio-detail-overline">Key features</span>
+                {project.features.map((feature, index) => (
+                  <div key={feature}><span>{String(index + 1).padStart(2, "0")}</span><p>{feature}</p></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+        {project.workflow && (
+          <section className="section portfolio-detail-section portfolio-workflow-section">
+            <div className="container">
+              <div className="portfolio-detail-section-heading">
+                <span className="eyebrow"><span className="eyebrow-dot" />From one request to the next step</span>
+                <h2>How it works</h2>
+              </div>
+              <div className="portfolio-workflow" aria-label="Career supervisor routes work to specialist agents">
+                {project.workflow.map((step, index) => (
+                  <div className="portfolio-workflow-step" key={step} style={{ "--workflow-delay": `${index * 70}ms` }}>
+                    <span>{index === 0 ? "Supervisor" : `Agent 0${index}`}</span>
+                    <strong>{step}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        <section className="section portfolio-detail-section">
+          <div className="container">
+            <div className="portfolio-detail-section-heading">
+              <span className="eyebrow"><span className="eyebrow-dot" />Built with care</span>
+              <h2>Technology stack</h2>
+            </div>
+            <div className="portfolio-tech-groups">
+              {Object.entries(stackGroups).map(([group, items]) => (
+                <div className="portfolio-tech-group" key={group}>
+                  <h3>{group}</h3>
+                  <TechStackPills items={items} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="section section-darker portfolio-detail-section">
+          <div className="container">
+            <div className="portfolio-detail-section-heading">
+              <span className="eyebrow"><span className="eyebrow-dot" />Inside the product</span>
+              <h2>Product snapshots</h2>
+              <p>Explore the key screens and workflows behind {project.title}.</p>
+            </div>
+            <div className="portfolio-gallery">
+              {gallery.map((image, index) => (
+                <button
+                  type="button"
+                  className={`portfolio-gallery-item${project.darkScreenshot ? " is-dark" : ""}`}
+                  onClick={() => setLightboxIndex(index)}
+                  key={image}
+                  aria-label={`Open ${project.title} screenshot ${index + 1}`}
+                >
+                  <div className="portfolio-gallery-browser-bar" aria-hidden="true"><span /><span /><span /></div>
+                  <img
+                    src={image}
+                    alt={project.screenshotAlts?.[index] || project.imageAlt || `${project.title} interface screenshot ${index + 1}`}
+                    width="1280"
+                    height="800"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
+              ))}
+            </div>
+            {project.confidential && <p className="portfolio-privacy-note">{project.privacyNote || "Client data blurred for privacy"}</p>}
+          </div>
+        </section>
+        {visibleResults.length > 0 && <section className="section portfolio-detail-section">
+          <div className="container portfolio-results-layout">
+            <div className="portfolio-story-heading">
+              <span className="eyebrow"><span className="eyebrow-dot" />The outcome</span>
+              <h2>Results</h2>
+              {project.slug === "atlas-learning" && (
+                <p>Sample outcomes for this placeholder case study. Replace with verified project metrics before publishing.</p>
+              )}
+            </div>
+            <ul className="portfolio-results-list">
+              {visibleResults.map((result) => <li key={result}><Icon name="check" size={18} />{result}</li>)}
+            </ul>
+          </div>
+        </section>}
+        {(liveUrl || repoUrl) && (
+          <section className="portfolio-external-links">
+            <div className="container">
+              {liveUrl && <a className="btn btn-primary" href={liveUrl} target="_blank" rel="noopener noreferrer">Live site ↗</a>}
+              {repoUrl && <a className="btn btn-ghost" href={repoUrl} target="_blank" rel="noopener noreferrer">View repository <Icon name="arrow" size={17} /></a>}
+            </div>
+          </section>
+        )}
+        <section className="portfolio-detail-cta">
+          <div className="container portfolio-detail-cta-inner">
+            <div>
+              <span className="eyebrow"><span className="eyebrow-dot" />Have a similar challenge?</span>
+              <h2>{project.ctaTitle || (project.confidential ? "Need a system like this?" : "Need something similar?")}</h2>
+              <p>Let’s talk about what your team needs next.</p>
+            </div>
+            <a className="btn btn-primary" href="contact.html">Start a project <Icon name="arrow" size={17} /></a>
+          </div>
+        </section>
+        <div className="container portfolio-next-project">
+          <span>Next project</span>
+          <a href={projectHref(nextProject)}>{nextProject.title}<Icon name="arrow" size={17} /></a>
+        </div>
+      </div>
+      {lightboxIndex !== null && (
+        <div
+          ref={lightboxRef}
+          className="portfolio-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${project.title} screenshot gallery`}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setLightboxIndex(null);
+          }}
+        >
+          <button ref={closeButtonRef} type="button" className="portfolio-lightbox-close" onClick={() => setLightboxIndex(null)} aria-label="Close image">
+            <Icon name="close" size={22} />
+          </button>
+          <button type="button" className="portfolio-lightbox-arrow is-previous" onClick={() => setLightboxIndex((lightboxIndex - 1 + gallery.length) % gallery.length)} aria-label="Previous image"><Icon name="arrow" size={20} /></button>
+          <img src={gallery[lightboxIndex]} alt={`${project.title} interface screenshot ${lightboxIndex + 1}`} width="1280" height="800" />
+          <button type="button" className="portfolio-lightbox-arrow" onClick={() => setLightboxIndex((lightboxIndex + 1) % gallery.length)} aria-label="Next image"><Icon name="arrow" size={20} /></button>
+          <p>{String(lightboxIndex + 1).padStart(2, "0")} / {String(gallery.length).padStart(2, "0")}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectNotFound() {
+  return (
+    <section className="section portfolio-not-found">
+      <div className="container">
+        <span className="eyebrow"><span className="eyebrow-dot" />Project not found</span>
+        <h1>This case study isn’t available.</h1>
+        <a className="btn btn-primary" href="portfolio.html">Back to portfolio <Icon name="arrow" size={17} /></a>
+      </div>
+    </section>
   );
 }
 
@@ -2615,7 +3062,18 @@ function ContactPage() {
 }
 
 function App() {
-  const currentPage = pages[window.location.pathname] || "Home";
+  const portfolioPathMatch = window.location.pathname.match(/^\/portfolio\/([^/]+)\/?$/);
+  const currentPage = portfolioPathMatch
+    ? "Portfolio"
+    : pages[window.location.pathname] || "Home";
+  const portfolioSlug = currentPage === "Portfolio"
+    ? portfolioPathMatch
+      ? decodeURIComponent(portfolioPathMatch[1])
+      : new URLSearchParams(window.location.search).get("project")
+    : null;
+  const portfolioProject = portfolioSlug
+    ? projects.find((project) => project.slug === portfolioSlug)
+    : null;
   const Page = {
     Home: HomePage,
     Services: ServicesPage,
@@ -2631,12 +3089,19 @@ function App() {
         ? "FutureSort Technologies — Software & AI Engineering"
         : currentPage === "Learning"
           ? "AI Engineering Course — FutureSort Learning"
-          : `${currentPage} — FutureSort Technologies`;
+          : currentPage === "Portfolio" && portfolioProject
+            ? `${portfolioProject.title} — Case Study | FutureSort Technologies`
+            : `${currentPage} — FutureSort Technologies`;
     const description = document.querySelector('meta[name="description"]');
     if (description)
-      description.setAttribute("content", pageDescriptions[currentPage]);
+      description.setAttribute(
+        "content",
+        currentPage === "Portfolio" && portfolioProject
+          ? `${portfolioProject.tagline} ${portfolioProject.solution}`.slice(0, 160)
+          : pageDescriptions[currentPage],
+      );
     window.scrollTo(0, 0);
-  }, [currentPage]);
+  }, [currentPage, portfolioProject]);
 
   useReveal();
 
