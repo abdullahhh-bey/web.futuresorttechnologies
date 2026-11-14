@@ -5,10 +5,10 @@ export const teamMembers = [
   {
     id: "atiq-ur-rehman",
     name: "Atiq ur Rehman",
-    position: "CEO & Founder",
+    position: "FOUNDER & CHIEF EXECUTIVE OFFICER",
     description: "Leads FutureSort as founder; AI/ML, frontend development and database design specialist.",
     image: "/team/atiq-ur-rehman.webp",
-    alt: "Portrait of Atiq ur Rehman, CEO & Founder at FutureSort",
+    alt: "Portrait of Atiq ur Rehman, Founder & Chief Executive Officer at FutureSort",
     width: 800,
     height: 1000,
     linkedin: "", // Add LinkedIn profile URL here, e.g. "https://www.linkedin.com/in/atiq-ur-rehman"
@@ -16,7 +16,7 @@ export const teamMembers = [
   {
     id: "abdullah-amirr",
     name: "Abdullah Amirr",
-    position: "Co-Founder & Technical Lead Engineer",
+    position: "CO-FOUNDER & TECHNICAL LEAD ENGINEER",
     description: "Backend and AI engineer building scalable APIs, AI agents and automation workflows.",
     image: "/team/abdullah-amirr.webp",
     alt: "Portrait of Abdullah Amirr, Co-Founder & Technical Lead Engineer at FutureSort",
@@ -27,10 +27,10 @@ export const teamMembers = [
   {
     id: "hasnain-ashfaq",
     name: "Hasnain Ashfaq",
-    position: "CTO",
+    position: "CHIEF TECHNOLOGY OFFICER",
     description: "PhD in Automation and UMT Assistant Professor specializing in AI, machine learning and robotics.",
     image: "/team/hasnain-ashfaq.webp",
-    alt: "Portrait of Hasnain Ashfaq, CTO at FutureSort",
+    alt: "Portrait of Hasnain Ashfaq, Chief Technology Officer at FutureSort",
     width: 800,
     height: 1000,
     linkedin: "", // Add LinkedIn profile URL here, e.g. "https://www.linkedin.com/in/hasnain-ashfaq"
@@ -38,10 +38,10 @@ export const teamMembers = [
   {
     id: "muhammad-zeeshan",
     name: "Muhammad Zeeshan",
-    position: "COO",
+    position: "CHIEF OPERATING OFFICER",
     description: "Full-stack developer building scalable web and AI apps with MERN, Flutter and LLM agents.",
     image: "/team/muhammad-zeeshan.webp",
-    alt: "Portrait of Muhammad Zeeshan, COO at FutureSort",
+    alt: "Portrait of Muhammad Zeeshan, Chief Operating Officer at FutureSort",
     width: 800,
     height: 1000,
     linkedin: "", // Add LinkedIn profile URL here, e.g. "https://www.linkedin.com/in/muhammad-zeeshan"

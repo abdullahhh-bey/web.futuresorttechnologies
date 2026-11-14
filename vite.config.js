@@ -22,6 +22,11 @@ function portfolioProjectRoutes() {
 
 export default defineConfig({
   plugins: [react(), portfolioProjectRoutes()],
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:8000'
+    }
+  },
   build: {
     rollupOptions: {
       input: ['index.html', 'services.html', 'portfolio.html', 'learning.html', 'about.html', 'contact.html']

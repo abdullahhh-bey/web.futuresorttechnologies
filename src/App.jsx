@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { projects } from "./data/projects.js";
 import { teamMembers } from "./data/team.js";
+import { clientReviews } from "./data/reviews.js";
+import { submitForm } from "./api.js";
 import logoFull from "../assets/logo-full.png";
 
 const pages = {
@@ -21,8 +23,7 @@ const pageDescriptions = {
     "Explore software, SaaS, AI, and mobile product case studies from FutureSort Technologies.",
   Learning:
     "Explore FutureSort Technologies' two-month AI engineering course and register for a free demo class.",
-  Team:
-    "Meet FutureSort Technologies: a focused engineering team building practical AI, SaaS, and custom software.",
+  Team: "Meet FutureSort Technologies: a focused engineering team building practical AI, SaaS, and custom software.",
   Contact:
     "Talk to FutureSort Technologies about your next AI, SaaS, software, or app development project.",
 };
@@ -383,8 +384,8 @@ function NetworkCanvas() {
       nodes = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.28,
-        vy: (Math.random() - 0.5) * 0.28,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
         phase: Math.random() * Math.PI * 2,
       }));
     };
@@ -409,7 +410,7 @@ function NetworkCanvas() {
         if (!reducedMotion) {
           node.x += node.vx;
           node.y += node.vy;
-          node.phase += 0.018;
+          node.phase += 0.045;
           if (node.x < -12) node.x = width + 12;
           if (node.x > width + 12) node.x = -12;
           if (node.y < -12) node.y = height + 12;
@@ -584,7 +585,12 @@ function BrainVisualLegacy() {
       context.save();
       context.globalCompositeOperation = "source-over";
       const glow = context.createRadialGradient(
-        width / 2, height / 2, 8, width / 2, height / 2, Math.min(width, height) * 0.42,
+        width / 2,
+        height / 2,
+        8,
+        width / 2,
+        height / 2,
+        Math.min(width, height) * 0.42,
       );
       glow.addColorStop(0, "rgba(70, 207, 204, 0.13)");
       glow.addColorStop(0.52, "rgba(62, 113, 170, 0.055)");
@@ -599,11 +605,35 @@ function BrainVisualLegacy() {
       const brainY = (value) => centerY + value * brainScale;
       const stem = new Path2D();
       stem.moveTo(brainX(-0.12), brainY(0.44));
-      stem.bezierCurveTo(brainX(-0.19), brainY(0.64), brainX(-0.13), brainY(0.82), brainX(-0.07), brainY(0.91));
-      stem.quadraticCurveTo(brainX(0), brainY(0.97), brainX(0.07), brainY(0.91));
-      stem.bezierCurveTo(brainX(0.13), brainY(0.82), brainX(0.19), brainY(0.64), brainX(0.12), brainY(0.44));
+      stem.bezierCurveTo(
+        brainX(-0.19),
+        brainY(0.64),
+        brainX(-0.13),
+        brainY(0.82),
+        brainX(-0.07),
+        brainY(0.91),
+      );
+      stem.quadraticCurveTo(
+        brainX(0),
+        brainY(0.97),
+        brainX(0.07),
+        brainY(0.91),
+      );
+      stem.bezierCurveTo(
+        brainX(0.13),
+        brainY(0.82),
+        brainX(0.19),
+        brainY(0.64),
+        brainX(0.12),
+        brainY(0.44),
+      );
       stem.closePath();
-      const stemFill = context.createLinearGradient(brainX(-0.12), brainY(0.55), brainX(0.12), brainY(0.9));
+      const stemFill = context.createLinearGradient(
+        brainX(-0.12),
+        brainY(0.55),
+        brainX(0.12),
+        brainY(0.9),
+      );
       stemFill.addColorStop(0, "rgba(86, 207, 204, 0.72)");
       stemFill.addColorStop(1, "rgba(15, 31, 47, 0.94)");
       context.fillStyle = stemFill;
@@ -615,21 +645,66 @@ function BrainVisualLegacy() {
       [-1, 1].forEach((side) => {
         const lobe = new Path2D();
         lobe.moveTo(brainX(side * 0.025), brainY(-0.77));
-        lobe.bezierCurveTo(brainX(side * 0.1), brainY(-0.9), brainX(side * 0.4), brainY(-0.85), brainX(side * 0.51), brainY(-0.71));
-        lobe.bezierCurveTo(brainX(side * 0.76), brainY(-0.75), brainX(side * 0.86), brainY(-0.54), brainX(side * 0.76), brainY(-0.34));
-        lobe.bezierCurveTo(brainX(side * 0.91), brainY(-0.17), brainX(side * 0.88), brainY(0.04), brainX(side * 0.75), brainY(0.19));
-        lobe.bezierCurveTo(brainX(side * 0.78), brainY(0.39), brainX(side * 0.58), brainY(0.57), brainX(side * 0.37), brainY(0.48));
-        lobe.bezierCurveTo(brainX(side * 0.23), brainY(0.64), brainX(side * 0.06), brainY(0.61), brainX(side * 0.025), brainY(0.48));
+        lobe.bezierCurveTo(
+          brainX(side * 0.1),
+          brainY(-0.9),
+          brainX(side * 0.4),
+          brainY(-0.85),
+          brainX(side * 0.51),
+          brainY(-0.71),
+        );
+        lobe.bezierCurveTo(
+          brainX(side * 0.76),
+          brainY(-0.75),
+          brainX(side * 0.86),
+          brainY(-0.54),
+          brainX(side * 0.76),
+          brainY(-0.34),
+        );
+        lobe.bezierCurveTo(
+          brainX(side * 0.91),
+          brainY(-0.17),
+          brainX(side * 0.88),
+          brainY(0.04),
+          brainX(side * 0.75),
+          brainY(0.19),
+        );
+        lobe.bezierCurveTo(
+          brainX(side * 0.78),
+          brainY(0.39),
+          brainX(side * 0.58),
+          brainY(0.57),
+          brainX(side * 0.37),
+          brainY(0.48),
+        );
+        lobe.bezierCurveTo(
+          brainX(side * 0.23),
+          brainY(0.64),
+          brainX(side * 0.06),
+          brainY(0.61),
+          brainX(side * 0.025),
+          brainY(0.48),
+        );
         lobe.closePath();
 
         context.save();
         context.clip(lobe);
-        const fill = context.createLinearGradient(brainX(side * 0.7), brainY(-0.8), brainX(side * 0.1), brainY(0.6));
+        const fill = context.createLinearGradient(
+          brainX(side * 0.7),
+          brainY(-0.8),
+          brainX(side * 0.1),
+          brainY(0.6),
+        );
         fill.addColorStop(0, "rgba(113, 227, 219, 0.72)");
         fill.addColorStop(0.45, "rgba(47, 113, 133, 0.78)");
         fill.addColorStop(1, "rgba(12, 27, 43, 0.9)");
         context.fillStyle = fill;
-        context.fillRect(brainX(-1), brainY(-1), brainScale * 2, brainScale * 2);
+        context.fillRect(
+          brainX(-1),
+          brainY(-1),
+          brainScale * 2,
+          brainScale * 2,
+        );
 
         const folds = [
           [-0.08, -0.56, -0.28, -0.77, -0.53, -0.63],
@@ -641,20 +716,25 @@ function BrainVisualLegacy() {
           [-0.08, -0.26, 0.02, -0.07, -0.3, 0.04],
           [-0.09, 0.15, 0.02, 0.31, -0.2, 0.41],
         ];
-        folds.forEach(([startX, startY, controlX, controlY, endX, endY], index) => {
-          context.beginPath();
-          context.moveTo(brainX(side * Math.abs(startX)), brainY(startY));
-          context.quadraticCurveTo(
-            brainX(side * Math.abs(controlX)), brainY(controlY),
-            brainX(side * Math.abs(endX)), brainY(endY),
-          );
-          context.strokeStyle = index % 2 === 0
-            ? "rgba(4, 17, 28, 0.62)"
-            : "rgba(173, 255, 239, 0.48)";
-          context.lineWidth = index % 3 === 0 ? 2.2 : 1.4;
-          context.lineCap = "round";
-          context.stroke();
-        });
+        folds.forEach(
+          ([startX, startY, controlX, controlY, endX, endY], index) => {
+            context.beginPath();
+            context.moveTo(brainX(side * Math.abs(startX)), brainY(startY));
+            context.quadraticCurveTo(
+              brainX(side * Math.abs(controlX)),
+              brainY(controlY),
+              brainX(side * Math.abs(endX)),
+              brainY(endY),
+            );
+            context.strokeStyle =
+              index % 2 === 0
+                ? "rgba(4, 17, 28, 0.62)"
+                : "rgba(173, 255, 239, 0.48)";
+            context.lineWidth = index % 3 === 0 ? 2.2 : 1.4;
+            context.lineCap = "round";
+            context.stroke();
+          },
+        );
         context.restore();
 
         context.beginPath();
@@ -668,13 +748,27 @@ function BrainVisualLegacy() {
 
       context.beginPath();
       context.moveTo(brainX(0), brainY(-0.77));
-      context.bezierCurveTo(brainX(-0.018), brainY(-0.38), brainX(0.02), brainY(0.18), brainX(0), brainY(0.51));
+      context.bezierCurveTo(
+        brainX(-0.018),
+        brainY(-0.38),
+        brainX(0.02),
+        brainY(0.18),
+        brainX(0),
+        brainY(0.51),
+      );
       context.strokeStyle = "rgba(5, 15, 24, 0.96)";
       context.lineWidth = 3;
       context.stroke();
       context.beginPath();
       context.moveTo(brainX(0), brainY(-0.73));
-      context.bezierCurveTo(brainX(-0.012), brainY(-0.37), brainX(0.013), brainY(0.16), brainX(0), brainY(0.47));
+      context.bezierCurveTo(
+        brainX(-0.012),
+        brainY(-0.37),
+        brainX(0.013),
+        brainY(0.16),
+        brainX(0),
+        brainY(0.47),
+      );
       context.strokeStyle = "rgba(169, 255, 239, 0.62)";
       context.lineWidth = 0.85;
       context.stroke();
@@ -716,20 +810,21 @@ function BrainVisualLegacy() {
 
       points.forEach((point, index) => {
         const position = projected[index];
-        const radius = (point.phase > pulse && point.phase < pulse + 0.035)
-          ? 2.45
-          : 0.9 + position.perspective * 0.7;
+        const radius =
+          point.phase > pulse && point.phase < pulse + 0.035
+            ? 2.45
+            : 0.9 + position.perspective * 0.7;
         context.beginPath();
         context.arc(position.x, position.y, radius, 0, Math.PI * 2);
-        context.fillStyle = point.phase > pulse && point.phase < pulse + 0.035
-          ? "#b6fff1"
-          : `rgba(224, 246, 248, ${Math.max(0.32, 0.88 - position.depth * 0.24)})`;
+        context.fillStyle =
+          point.phase > pulse && point.phase < pulse + 0.035
+            ? "#b6fff1"
+            : `rgba(224, 246, 248, ${Math.max(0.32, 0.88 - position.depth * 0.24)})`;
         context.shadowColor = "#81eee5";
         context.shadowBlur = radius > 2 ? 7 : 2;
         context.fill();
       });
       context.restore();
-
     };
 
     const redraw = () => {
@@ -767,7 +862,8 @@ function BrainVisualLegacy() {
       endX,
       endY,
       viewBox: `0 0 ${bounds.width} ${bounds.height}`,
-      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+        .matches,
     });
     window.clearTimeout(sparkTimerRef.current);
     sparkTimerRef.current = window.setTimeout(() => setActiveSpark(null), 850);
@@ -783,7 +879,10 @@ function BrainVisualLegacy() {
     >
       <div className="brain-aura" aria-hidden="true" />
       <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
-      <span className="brain-caption"><span className="brain-caption-dot" />Intelligence, by design</span>
+      <span className="brain-caption">
+        <span className="brain-caption-dot" />
+        Intelligence, by design
+      </span>
       {activeSpark && (
         <svg
           key={activeSpark.key}
@@ -792,12 +891,25 @@ function BrainVisualLegacy() {
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          <path d={activeSpark.path} pathLength="1" className="brain-spark-trail" />
+          <path
+            d={activeSpark.path}
+            pathLength="1"
+            className="brain-spark-trail"
+          />
           {activeSpark.reducedMotion ? (
-            <circle cx={activeSpark.endX} cy={activeSpark.endY} r="3.5" className="brain-spark-core" />
+            <circle
+              cx={activeSpark.endX}
+              cy={activeSpark.endY}
+              r="3.5"
+              className="brain-spark-core"
+            />
           ) : (
             <circle r="3.5" className="brain-spark-core">
-              <animateMotion path={activeSpark.path} dur="650ms" fill="freeze" />
+              <animateMotion
+                path={activeSpark.path}
+                dur="650ms"
+                fill="freeze"
+              />
             </circle>
           )}
         </svg>
@@ -828,11 +940,27 @@ function BrainVisual() {
   const [activeSpark, setActiveSpark] = useState(null);
   const capabilities = [
     { title: "LLMs", className: "brain-tag-llm", source: [0.34, 0.37] },
-    { title: "Agentic AI", className: "brain-tag-agents", source: [0.68, 0.35] },
-    { title: "AI Architecture", className: "brain-tag-architecture", source: [0.62, 0.5] },
+    {
+      title: "Agentic AI",
+      className: "brain-tag-agents",
+      source: [0.68, 0.35],
+    },
+    {
+      title: "AI Architecture",
+      className: "brain-tag-architecture",
+      source: [0.62, 0.5],
+    },
     { title: "RAG Systems", className: "brain-tag-rag", source: [0.68, 0.61] },
-    { title: "AI Automation", className: "brain-tag-automation", source: [0.35, 0.61] },
-    { title: "AI Integrations", className: "brain-tag-integrations", source: [0.28, 0.49] },
+    {
+      title: "AI Automation",
+      className: "brain-tag-automation",
+      source: [0.35, 0.61],
+    },
+    {
+      title: "AI Integrations",
+      className: "brain-tag-integrations",
+      source: [0.28, 0.49],
+    },
   ];
 
   useEffect(() => {
@@ -844,7 +972,9 @@ function BrainVisual() {
     let points = [];
     let width = 0;
     let height = 0;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     let brainPath;
     let cerebellumPath;
     let stemPath;
@@ -857,31 +987,164 @@ function BrainVisual() {
       const py = (value) => centerY + value * scale;
 
       brainPath.moveTo(px(-0.88), py(0.1));
-      brainPath.bezierCurveTo(px(-1.02), py(-0.05), px(-0.98), py(-0.29), px(-0.79), py(-0.38));
-      brainPath.bezierCurveTo(px(-0.74), py(-0.56), px(-0.54), py(-0.62), px(-0.36), py(-0.53));
-      brainPath.bezierCurveTo(px(-0.22), py(-0.66), px(0.02), py(-0.65), px(0.18), py(-0.53));
-      brainPath.bezierCurveTo(px(0.37), py(-0.62), px(0.58), py(-0.52), px(0.66), py(-0.37));
-      brainPath.bezierCurveTo(px(0.86), py(-0.36), px(0.98), py(-0.19), px(0.91), py(-0.02));
-      brainPath.bezierCurveTo(px(1.01), py(0.15), px(0.89), py(0.32), px(0.72), py(0.36));
-      brainPath.bezierCurveTo(px(0.65), py(0.5), px(0.45), py(0.53), px(0.28), py(0.42));
-      brainPath.bezierCurveTo(px(0.09), py(0.53), px(-0.12), py(0.5), px(-0.28), py(0.39));
-      brainPath.bezierCurveTo(px(-0.45), py(0.47), px(-0.64), py(0.36), px(-0.7), py(0.24));
-      brainPath.bezierCurveTo(px(-0.83), py(0.28), px(-0.94), py(0.22), px(-0.88), py(0.1));
+      brainPath.bezierCurveTo(
+        px(-1.02),
+        py(-0.05),
+        px(-0.98),
+        py(-0.29),
+        px(-0.79),
+        py(-0.38),
+      );
+      brainPath.bezierCurveTo(
+        px(-0.74),
+        py(-0.56),
+        px(-0.54),
+        py(-0.62),
+        px(-0.36),
+        py(-0.53),
+      );
+      brainPath.bezierCurveTo(
+        px(-0.22),
+        py(-0.66),
+        px(0.02),
+        py(-0.65),
+        px(0.18),
+        py(-0.53),
+      );
+      brainPath.bezierCurveTo(
+        px(0.37),
+        py(-0.62),
+        px(0.58),
+        py(-0.52),
+        px(0.66),
+        py(-0.37),
+      );
+      brainPath.bezierCurveTo(
+        px(0.86),
+        py(-0.36),
+        px(0.98),
+        py(-0.19),
+        px(0.91),
+        py(-0.02),
+      );
+      brainPath.bezierCurveTo(
+        px(1.01),
+        py(0.15),
+        px(0.89),
+        py(0.32),
+        px(0.72),
+        py(0.36),
+      );
+      brainPath.bezierCurveTo(
+        px(0.65),
+        py(0.5),
+        px(0.45),
+        py(0.53),
+        px(0.28),
+        py(0.42),
+      );
+      brainPath.bezierCurveTo(
+        px(0.09),
+        py(0.53),
+        px(-0.12),
+        py(0.5),
+        px(-0.28),
+        py(0.39),
+      );
+      brainPath.bezierCurveTo(
+        px(-0.45),
+        py(0.47),
+        px(-0.64),
+        py(0.36),
+        px(-0.7),
+        py(0.24),
+      );
+      brainPath.bezierCurveTo(
+        px(-0.83),
+        py(0.28),
+        px(-0.94),
+        py(0.22),
+        px(-0.88),
+        py(0.1),
+      );
       brainPath.closePath();
 
       cerebellumPath.moveTo(px(0.44), py(0.35));
-      cerebellumPath.bezierCurveTo(px(0.56), py(0.31), px(0.75), py(0.35), px(0.81), py(0.45));
-      cerebellumPath.bezierCurveTo(px(0.91), py(0.49), px(0.88), py(0.63), px(0.76), py(0.65));
-      cerebellumPath.bezierCurveTo(px(0.67), py(0.72), px(0.49), py(0.66), px(0.45), py(0.58));
-      cerebellumPath.bezierCurveTo(px(0.36), py(0.52), px(0.37), py(0.41), px(0.44), py(0.35));
+      cerebellumPath.bezierCurveTo(
+        px(0.56),
+        py(0.31),
+        px(0.75),
+        py(0.35),
+        px(0.81),
+        py(0.45),
+      );
+      cerebellumPath.bezierCurveTo(
+        px(0.91),
+        py(0.49),
+        px(0.88),
+        py(0.63),
+        px(0.76),
+        py(0.65),
+      );
+      cerebellumPath.bezierCurveTo(
+        px(0.67),
+        py(0.72),
+        px(0.49),
+        py(0.66),
+        px(0.45),
+        py(0.58),
+      );
+      cerebellumPath.bezierCurveTo(
+        px(0.36),
+        py(0.52),
+        px(0.37),
+        py(0.41),
+        px(0.44),
+        py(0.35),
+      );
       cerebellumPath.closePath();
 
       stemPath.moveTo(px(0.27), py(0.35));
-      stemPath.bezierCurveTo(px(0.35), py(0.39), px(0.39), py(0.48), px(0.36), py(0.57));
-      stemPath.bezierCurveTo(px(0.35), py(0.66), px(0.42), py(0.72), px(0.39), py(0.8));
-      stemPath.bezierCurveTo(px(0.37), py(0.86), px(0.25), py(0.86), px(0.23), py(0.79));
-      stemPath.bezierCurveTo(px(0.22), py(0.69), px(0.16), py(0.63), px(0.18), py(0.54));
-      stemPath.bezierCurveTo(px(0.18), py(0.45), px(0.19), py(0.38), px(0.27), py(0.35));
+      stemPath.bezierCurveTo(
+        px(0.35),
+        py(0.39),
+        px(0.39),
+        py(0.48),
+        px(0.36),
+        py(0.57),
+      );
+      stemPath.bezierCurveTo(
+        px(0.35),
+        py(0.66),
+        px(0.42),
+        py(0.72),
+        px(0.39),
+        py(0.8),
+      );
+      stemPath.bezierCurveTo(
+        px(0.37),
+        py(0.86),
+        px(0.25),
+        py(0.86),
+        px(0.23),
+        py(0.79),
+      );
+      stemPath.bezierCurveTo(
+        px(0.22),
+        py(0.69),
+        px(0.16),
+        py(0.63),
+        px(0.18),
+        py(0.54),
+      );
+      stemPath.bezierCurveTo(
+        px(0.18),
+        py(0.45),
+        px(0.19),
+        py(0.38),
+        px(0.27),
+        py(0.35),
+      );
       stemPath.closePath();
     };
 
@@ -924,11 +1187,17 @@ function BrainVisual() {
           const localX = (x - centerX) / scale;
           const localY = (y - centerY) / scale;
           const grooveWave = Math.sin(localX * 14 + localY * 4) * 0.09;
-          if (path === brainPath && random() < 0.22 && Math.abs(localY - grooveWave) < 0.034) continue;
+          if (
+            path === brainPath &&
+            random() < 0.22 &&
+            Math.abs(localY - grooveWave) < 0.034
+          )
+            continue;
           points.push({
             x,
             y,
-            radius: hue === "cyan" ? 1 + random() * 0.75 : 0.75 + random() * 0.85,
+            radius:
+              hue === "cyan" ? 1 + random() * 0.75 : 0.75 + random() * 0.85,
             phase: random() * Math.PI * 2,
             speed: 0.7 + random() * 1.2,
             brightness: 0.42 + random() * 0.52,
@@ -957,15 +1226,15 @@ function BrainVisual() {
           points.push({
             x: px(
               inverse ** 3 * sx +
-              3 * inverse ** 2 * t * c1x +
-              3 * inverse * t ** 2 * c2x +
-              t ** 3 * ex,
+                3 * inverse ** 2 * t * c1x +
+                3 * inverse * t ** 2 * c2x +
+                t ** 3 * ex,
             ),
             y: py(
               inverse ** 3 * sy +
-              3 * inverse ** 2 * t * c1y +
-              3 * inverse * t ** 2 * c2y +
-              t ** 3 * ey,
+                3 * inverse ** 2 * t * c1y +
+                3 * inverse * t ** 2 * c2y +
+                t ** 3 * ey,
             ),
             radius: 1 + random() * 0.7,
             phase: random() * Math.PI * 2,
@@ -994,15 +1263,15 @@ function BrainVisual() {
           const inverse = 1 - t;
           const x = px(
             inverse ** 3 * sx +
-            3 * inverse ** 2 * t * c1x +
-            3 * inverse * t ** 2 * c2x +
-            t ** 3 * ex,
+              3 * inverse ** 2 * t * c1x +
+              3 * inverse * t ** 2 * c2x +
+              t ** 3 * ex,
           );
           const y = py(
             inverse ** 3 * sy +
-            3 * inverse ** 2 * t * c1y +
-            3 * inverse * t ** 2 * c2y +
-            t ** 3 * ey,
+              3 * inverse ** 2 * t * c1y +
+              3 * inverse * t ** 2 * c2y +
+              t ** 3 * ey,
           );
           if (!context.isPointInPath(brainPath, x, y)) continue;
           points.push({
@@ -1021,14 +1290,16 @@ function BrainVisual() {
     const render = (time = 0) => {
       context.clearRect(0, 0, width, height);
       points.forEach((point) => {
-        const pulse = (Math.sin(time * 0.001 * point.speed + point.phase) + 1) / 2;
+        const pulse =
+          (Math.sin(time * 0.0022 * point.speed + point.phase) + 1) / 2;
         const alpha = point.brightness * (0.62 + pulse * 0.38);
         const radius = point.radius * (0.8 + pulse * 0.38);
         context.beginPath();
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
-        context.fillStyle = point.hue === "cyan"
-          ? `rgba(105, 242, 235, ${alpha})`
-          : `rgba(222, 247, 249, ${alpha})`;
+        context.fillStyle =
+          point.hue === "cyan"
+            ? `rgba(105, 242, 235, ${alpha})`
+            : `rgba(222, 247, 249, ${alpha})`;
         if (pulse > 0.88) {
           context.shadowColor = point.hue === "cyan" ? "#56fff0" : "#c8ffff";
           context.shadowBlur = point.hue === "cyan" ? 11 : 7;
@@ -1064,7 +1335,9 @@ function BrainVisual() {
     const bounds = visual?.getBoundingClientRect();
     if (!visual || !bounds) return;
     const tagBounds = event.currentTarget.getBoundingClientRect();
-    const capability = capabilities.find((item) => item.title === event.currentTarget.dataset.capability);
+    const capability = capabilities.find(
+      (item) => item.title === event.currentTarget.dataset.capability,
+    );
     if (!capability) return;
     const [sourceX, sourceY] = capability.source;
     const startX = bounds.width * sourceX;
@@ -1079,7 +1352,8 @@ function BrainVisual() {
       endX,
       endY,
       viewBox: `0 0 ${bounds.width} ${bounds.height}`,
-      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+        .matches,
     });
     window.clearTimeout(sparkTimerRef.current);
     sparkTimerRef.current = window.setTimeout(() => setActiveSpark(null), 850);
@@ -1088,9 +1362,16 @@ function BrainVisual() {
   useEffect(() => () => window.clearTimeout(sparkTimerRef.current), []);
 
   return (
-    <div className="brain-visual" role="group" aria-label="A brain formed from glowing particles and AI capabilities">
+    <div
+      className="brain-visual"
+      role="group"
+      aria-label="A brain formed from glowing particles and AI capabilities"
+    >
       <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
-      <span className="brain-caption"><span className="brain-caption-dot" />Intelligence, by design</span>
+      <span className="brain-caption">
+        <span className="brain-caption-dot" />
+        Intelligence, by design
+      </span>
       {activeSpark && (
         <svg
           key={activeSpark.key}
@@ -1099,12 +1380,25 @@ function BrainVisual() {
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          <path d={activeSpark.path} pathLength="1" className="brain-spark-trail" />
+          <path
+            d={activeSpark.path}
+            pathLength="1"
+            className="brain-spark-trail"
+          />
           {activeSpark.reducedMotion ? (
-            <circle cx={activeSpark.endX} cy={activeSpark.endY} r="3.5" className="brain-spark-core" />
+            <circle
+              cx={activeSpark.endX}
+              cy={activeSpark.endY}
+              r="3.5"
+              className="brain-spark-core"
+            />
           ) : (
             <circle r="3.5" className="brain-spark-core">
-              <animateMotion path={activeSpark.path} dur="650ms" fill="freeze" />
+              <animateMotion
+                path={activeSpark.path}
+                dur="650ms"
+                fill="freeze"
+              />
             </circle>
           )}
         </svg>
@@ -1163,7 +1457,14 @@ function TechnologySection() {
   const groups = [
     {
       title: "Frontend",
-      technologies: ["React", "Angular", "Vue.js", "Next.js", "TypeScript", "Tailwind CSS"],
+      technologies: [
+        "React",
+        "Angular",
+        "Vue.js",
+        "Next.js",
+        "TypeScript",
+        "Tailwind CSS",
+      ],
     },
     {
       title: "Backend",
@@ -1171,15 +1472,38 @@ function TechnologySection() {
     },
     {
       title: "Artificial intelligence",
-      technologies: ["TensorFlow", "PyTorch", "Keras", "OpenAI", "LLMs", "Agentic AI", "RAG Systems", "Computer Vision"],
+      technologies: [
+        "TensorFlow",
+        "PyTorch",
+        "Keras",
+        "OpenAI",
+        "LLMs",
+        "Agentic AI",
+        "RAG Systems",
+        "Computer Vision",
+      ],
     },
     {
       title: "Data science",
-      technologies: ["Data Analysis", "Big Data", "Predictive Models", "Data Visualization", "Business Intelligence", "Statistical Analysis"],
+      technologies: [
+        "Data Analysis",
+        "Big Data",
+        "Predictive Models",
+        "Data Visualization",
+        "Business Intelligence",
+        "Statistical Analysis",
+      ],
     },
     {
       title: "Cloud & DevOps",
-      technologies: ["AWS", "Azure", "Google Cloud", "Docker", "Kubernetes", "CI/CD"],
+      technologies: [
+        "AWS",
+        "Azure",
+        "Google Cloud",
+        "Docker",
+        "Kubernetes",
+        "CI/CD",
+      ],
     },
     {
       title: "Databases",
@@ -1195,11 +1519,13 @@ function TechnologySection() {
             <span className="eyebrow-dot" />
             Tools behind the work
           </span>
-          <h2>Technologies we <span>master.</span></h2>
+          <h2>
+            Technologies we <span>master.</span>
+          </h2>
           <p>
             Our team works across modern product, AI, data, and cloud
-            technologies—choosing the right tools for the job, not forcing
-            every project into the same stack.
+            technologies—choosing the right tools for the job, not forcing every
+            project into the same stack.
           </p>
         </div>
         <div className="technology-grid">
@@ -1310,7 +1636,7 @@ function ProcessSteps() {
           0,
           Math.min(
             1,
-            ((window.innerHeight * 0.52) - firstCenter) /
+            (window.innerHeight * 0.52 - firstCenter) /
               Math.max(1, lastCenter - firstCenter),
           ),
         );
@@ -1319,9 +1645,8 @@ function ProcessSteps() {
         const sticky = scrollTrack.querySelector(".process-sticky");
         if (!sticky) return;
 
-        const stickyTop = Number.parseFloat(
-          window.getComputedStyle(sticky).top,
-        ) || 0;
+        const stickyTop =
+          Number.parseFloat(window.getComputedStyle(sticky).top) || 0;
         const scrollDistance = Math.max(
           1,
           scrollTrack.offsetHeight - sticky.offsetHeight,
@@ -1339,7 +1664,9 @@ function ProcessSteps() {
         steps.length - 1,
         Math.round(progress * (steps.length - 1)),
       );
-      setActiveIndex(current => current === nextIndex ? current : nextIndex);
+      setActiveIndex((current) =>
+        current === nextIndex ? current : nextIndex,
+      );
     };
 
     const onScroll = () => {
@@ -1390,9 +1717,6 @@ function ProcessSteps() {
             </article>
           ))}
         </div>
-        <p className="process-scroll-hint">
-          Scroll to move through our process <span aria-hidden="true">↓</span>
-        </p>
       </div>
     </div>
   );
@@ -1403,12 +1727,32 @@ function CTA({
   text = "Tell us what you are trying to solve. We will help you find a clear path from idea to something real.",
   button = "Secure engagement",
 }) {
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState({ state: "idle", message: "" });
   const [briefLength, setBriefLength] = useState(0);
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
-    setSubmitted(true);
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    setStatus({ state: "sending", message: "" });
+    try {
+      await submitForm("inquiries", {
+        source: "engagement",
+        name: values.get("name"),
+        email: values.get("email"),
+        project_type: values.get("projectType"),
+        project_vision: values.get("projectVision"),
+      });
+      form.reset();
+      setBriefLength(0);
+      setStatus({
+        state: "success",
+        message:
+          "Thanks, your enquiry has been sent. We will be in touch soon.",
+      });
+    } catch (error) {
+      setStatus({ state: "error", message: error.message });
+    }
   };
 
   return (
@@ -1424,51 +1768,120 @@ function CTA({
             <p>{text}</p>
             <div className="engagement-details">
               <a href="mailto:hello@example.com">
-                <span className="engagement-icon"><Icon name="mail" size={20} /></span>
-                <span><small>Email us</small><strong>hello@example.com</strong></span>
+                <span className="engagement-icon">
+                  <Icon name="mail" size={20} />
+                </span>
+                <span>
+                  <small>Email us</small>
+                  <strong>abdullahamirr9@gmail.com</strong>
+                </span>
               </a>
               <a href="tel:+923000000000">
-                <span className="engagement-icon"><Icon name="phone" size={20} /></span>
-                <span><small>Call us</small><strong>+92 300 0000000</strong></span>
+                <span className="engagement-icon">
+                  <Icon name="phone" size={20} />
+                </span>
+                <span>
+                  <small>Call us</small>
+                  <strong>+92 3045175871</strong>
+                </span>
               </a>
               <div>
-                <span className="engagement-icon"><Icon name="pin" size={20} /></span>
-                <span><small>Location</small><strong>Lahore, Punjab, Pakistan</strong></span>
+                <span className="engagement-icon">
+                  <Icon name="pin" size={20} />
+                </span>
+                <span>
+                  <small>Location</small>
+                  <strong>Lahore, Punjab, Pakistan</strong>
+                </span>
               </div>
             </div>
           </div>
           <form className="engagement-form" onSubmit={onSubmit}>
-            <p className="engagement-form-note">Frontend enquiry preview · not connected to a submission service.</p>
             <div className="engagement-field-row">
               <div className="engagement-field">
-                <label htmlFor="engagement-name">Primary contact name</label>
-                <input id="engagement-name" name="name" autoComplete="name" required placeholder="e.g. Alex Morgan" />
+                <label htmlFor="engagement-name">Your name</label>
+                <input
+                  id="engagement-name"
+                  name="name"
+                  autoComplete="name"
+                  required
+                  maxLength={120}
+                  placeholder="e.g. Alex Morgan"
+                />
               </div>
               <div className="engagement-field">
-                <label htmlFor="engagement-email">Corporate email</label>
-                <input id="engagement-email" name="email" type="email" autoComplete="email" required placeholder="you@company.com" />
+                <label htmlFor="engagement-email">Business email</label>
+                <input
+                  id="engagement-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  maxLength={254}
+                  placeholder="you@company.com"
+                />
               </div>
+            </div>
+            <div className="engagement-field">
+              <label htmlFor="engagement-project-type">
+                What do you need help with?
+              </label>
+              <select
+                id="engagement-project-type"
+                name="projectType"
+                className="engagement-select"
+                required
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Select a service
+                </option>
+                <option value="SaaS">SaaS</option>
+                <option value="Web Development">Web development</option>
+                <option value="Custom Software">Custom software</option>
+                <option value="AI Automation">AI automation</option>
+                <option value="Agentic AI">Agentic AI</option>
+                <option value="Mobile Applications">Mobile applications</option>
+                <option value="API & Integrations">
+                  API &amp; integrations
+                </option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div className="engagement-field engagement-brief-field">
               <label htmlFor="engagement-brief">
-                Project blueprint &amp; vision <span>({briefLength}/1500)</span>
+                Project Idea &amp; vision <span>({briefLength}/1500)</span>
               </label>
               <textarea
                 id="engagement-brief"
-                name="brief"
+                name="projectVision"
                 maxLength={1500}
                 onChange={(event) => setBriefLength(event.target.value.length)}
                 required
                 placeholder="Share a little about the problem, product, or idea..."
               />
             </div>
-            <button type="submit" className="engagement-submit">
-              {button}<Icon name="arrow" size={18} />
+            <button
+              type="submit"
+              className="engagement-submit"
+              disabled={status.state === "sending"}
+            >
+              {status.state === "sending" ? (
+                "Sending..."
+              ) : (
+                <>
+                  {button}
+                  <Icon name="arrow" size={18} />
+                </>
+              )}
             </button>
-            {submitted && (
-              <p className="engagement-notice" role="status">
-                This enquiry form is a frontend preview and is not connected to a submission service yet. Please use our{" "}
-                <a href="contact.html">contact page</a> to continue.
+            {status.message && (
+              <p
+                className={`engagement-notice${status.state === "error" ? " is-error" : ""}`}
+                role="status"
+                aria-live="polite"
+              >
+                {status.message}
               </p>
             )}
           </form>
@@ -1477,13 +1890,6 @@ function CTA({
     </section>
   );
 }
-
-const reviewPlaceholders = Array.from({ length: 8 }, (_, index) => ({
-  id: index + 1,
-  name: "Client name",
-  role: "Project / role",
-  text: "Add an approved client review here before publishing. Replace this placeholder with the client's exact feedback and confirm permission to share it.",
-}));
 
 function ReviewsSection() {
   const trackRef = useRef(null);
@@ -1494,21 +1900,25 @@ function ReviewsSection() {
     const track = trackRef.current;
     const firstCard = track?.firstElementChild;
     if (!track || !firstCard) return;
-    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    const gap =
+      Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
     const step = firstCard.getBoundingClientRect().width + gap;
     const maxIndex = Math.max(
       0,
       Math.round((track.scrollWidth - track.clientWidth) / step),
     );
     setMaxReviewIndex(maxIndex);
-    setActiveReview(Math.min(maxIndex, Math.max(0, Math.round(track.scrollLeft / step))));
+    setActiveReview(
+      Math.min(maxIndex, Math.max(0, Math.round(track.scrollLeft / step))),
+    );
   };
 
   const moveReview = (direction) => {
     const track = trackRef.current;
     const firstCard = track?.firstElementChild;
     if (!track || !firstCard) return;
-    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    const gap =
+      Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
     track.scrollBy({
       left: direction * (firstCard.getBoundingClientRect().width + gap),
       behavior: "smooth",
@@ -1532,7 +1942,8 @@ function ReviewsSection() {
     const track = trackRef.current;
     const firstCard = track?.firstElementChild;
     if (!track || !firstCard) return;
-    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    const gap =
+      Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
     track.scrollTo({
       left: index * (firstCard.getBoundingClientRect().width + gap),
       behavior: "smooth",
@@ -1540,20 +1951,42 @@ function ReviewsSection() {
   };
 
   return (
-    <section className="reviews-section section section-darker" aria-labelledby="reviews-title">
+    <section
+      className="reviews-section section section-darker"
+      aria-labelledby="reviews-title"
+    >
       <div className="container">
         <div className="reviews-heading reveal">
           <div>
-            <span className="eyebrow"><span className="eyebrow-dot" />Client reviews</span>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" />
+              Client reviews
+            </span>
             <h2 id="reviews-title">What our clients say.</h2>
-            <p>Genuine client feedback will appear here once reviews are approved for publication.</p>
+            <p>
+              Thoughtful partnerships, secure engineering, and genuine
+              collaboration behind every build.
+            </p>
           </div>
           <div className="reviews-controls">
-            <span className="reviews-count">{String(activeReview + 1).padStart(2, "0")} <i>/</i> {String(reviewPlaceholders.length).padStart(2, "0")}</span>
-            <button type="button" onClick={() => moveReview(-1)} disabled={activeReview === 0} aria-label="Previous review">
+            <span className="reviews-count">
+              {String(activeReview + 1).padStart(2, "0")} <i>/</i>{" "}
+              {String(clientReviews.length).padStart(2, "0")}
+            </span>
+            <button
+              type="button"
+              onClick={() => moveReview(-1)}
+              disabled={activeReview === 0}
+              aria-label="Previous review"
+            >
               <Icon name="arrow" size={18} />
             </button>
-            <button type="button" onClick={() => moveReview(1)} disabled={activeReview >= maxReviewIndex} aria-label="Next review">
+            <button
+              type="button"
+              onClick={() => moveReview(1)}
+              disabled={activeReview >= maxReviewIndex}
+              aria-label="Next review"
+            >
               <Icon name="arrow" size={18} />
             </button>
           </div>
@@ -1564,22 +1997,32 @@ function ReviewsSection() {
           onScroll={updateActiveReview}
           role="region"
           aria-roledescription="carousel"
-          aria-label="Client review placeholders"
+          aria-label="Client reviews"
         >
-          {reviewPlaceholders.map((review) => (
+          {clientReviews.map((review) => (
             <article className="review-card" key={review.id}>
-              <span className="review-placeholder-label">Review placeholder {String(review.id).padStart(2, "0")}</span>
-              <div className="review-quote-mark" aria-hidden="true">“</div>
+              <div className="review-card-top">
+                <span className="review-tag">{review.project}</span>
+                <span className="review-category-pill">{review.category}</span>
+              </div>
+              <div className="review-quote-mark" aria-hidden="true">
+                “
+              </div>
               <blockquote>{review.text}</blockquote>
               <div className="review-author">
-                <span className="review-avatar" aria-hidden="true">{String(review.id).padStart(2, "0")}</span>
-                <span><strong>{review.name}</strong><small>{review.role}</small></span>
+                <span className="review-avatar" aria-hidden="true">
+                  {review.initials}
+                </span>
+                <span>
+                  <strong>{review.name}</strong>
+                  <small>{review.role}</small>
+                </span>
               </div>
             </article>
           ))}
         </div>
         <div className="reviews-pagination" aria-label="Choose a review">
-          {reviewPlaceholders.slice(0, maxReviewIndex + 1).map((review, index) => (
+          {clientReviews.slice(0, maxReviewIndex + 1).map((review, index) => (
             <button
               type="button"
               key={review.id}
@@ -1609,8 +2052,8 @@ function Footer() {
               />
             </a>
             <p>
-              Thoughtful software and practical AI for teams building what comes
-              next.
+              The global leader in FinTech software solutions, Web app
+              development, and enterprise AI automation.
             </p>
           </div>
           <div className="footer-column">
@@ -1628,10 +2071,8 @@ function Footer() {
           </div>
           <div className="footer-column">
             <h2>Get in touch</h2>
-            <a href="mailto:hello@futuresorttech.com">
-              hello@futuresorttech.com
-            </a>
-            <a href="tel:+920000000000">+92 000 0000000</a>
+            <a href="abdullahamirr9@gmail.com">abdullahamirr9@gmail.com</a>
+            <a href="03045175871">+92 304 5175871</a>
             <span>Lahore, Pakistan</span>
           </div>
         </div>
@@ -1640,7 +2081,6 @@ function Footer() {
             © {new Date().getFullYear()} FutureSort Technologies. All rights
             reserved.
           </span>
-          <span>Built with care, in-house.</span>
         </div>
       </div>
     </footer>
@@ -1679,8 +2119,8 @@ function HomePage() {
             </h1>
             <p className="hero-lede">
               From LLMs and RAG to agentic systems and AI architecture, our
-              whole team thinks deeply about how intelligence should work
-              inside real products.
+              whole team thinks deeply about how intelligence should work inside
+              real products.
             </p>
             <div className="hero-actions">
               <a className="btn btn-primary" href="contact.html">
@@ -1690,18 +2130,12 @@ function HomePage() {
                 Explore what we do
               </a>
             </div>
-            <div className="hero-note">
-              <span className="status-dot" />
-              AI expertise across every stage of the build
-            </div>
           </div>
           <div className="hero-art reveal">
             <BrainVisual />
           </div>
         </div>
         <div className="container hero-bottom">
-          <span>ENGINEERED FOR REAL-WORLD PROBLEMS</span>
-          <div className="hero-bottom-line" />
           <a href="#capabilities">
             Discover the difference <span>↓</span>
           </a>
@@ -1802,11 +2236,35 @@ const learningTracks = [
 function LearningPage() {
   const [studentStatus, setStudentStatus] = useState("");
   const [courseTrack, setCourseTrack] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState({ state: "idle", message: "" });
 
-  const submitRegistration = (event) => {
+  const submitRegistration = async (event) => {
     event.preventDefault();
-    setSubmitted(true);
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    const isStudent = values.get("studentStatus") === "student";
+    setStatus({ state: "sending", message: "" });
+    try {
+      await submitForm("demo-requests", {
+        first_name: values.get("firstName"),
+        last_name: values.get("lastName"),
+        email: values.get("email"),
+        phone_number: values.get("phone"),
+        is_student: isStudent,
+        demo_batch: values.get("courseTrack"),
+        university: isStudent ? values.get("university") : null,
+        degree_program: isStudent ? values.get("degree") : null,
+      });
+      form.reset();
+      setStudentStatus("");
+      setCourseTrack("");
+      setStatus({
+        state: "success",
+        message: "Your free demo request has been received.",
+      });
+    } catch (error) {
+      setStatus({ state: "error", message: error.message });
+    }
   };
 
   const chooseTrack = (trackId) => {
@@ -1821,15 +2279,22 @@ function LearningPage() {
     <div className="learning-page">
       <section className="learning-hero">
         <NetworkCanvas />
-        <div className="learning-hero-glow learning-hero-glow-one" aria-hidden="true" />
-        <div className="learning-hero-glow learning-hero-glow-two" aria-hidden="true" />
+        <div
+          className="learning-hero-glow learning-hero-glow-one"
+          aria-hidden="true"
+        />
+        <div
+          className="learning-hero-glow learning-hero-glow-two"
+          aria-hidden="true"
+        />
         <div className="container learning-hero-content">
           <div className="learning-open-badge reveal">
             <span />
             Registrations are open
           </div>
-          <span className="eyebrow reveal"><span className="eyebrow-dot" />FutureSort Learning</span>
-          <h1 className="reveal">Learn to build with <span>AI.</span></h1>
+          <h1 className="reveal">
+            Learn to build with <span>AI.</span>
+          </h1>
           <p className="learning-hero-lede reveal">
             A focused, two-month AI engineering course with separate technical
             and non-technical learning paths. Start with a free demo class for
@@ -1839,13 +2304,22 @@ function LearningPage() {
             <a className="btn btn-primary" href="#demo-registration">
               Register for a free demo <Icon name="arrow" size={18} />
             </a>
-            <span className="learning-duration"><Icon name="clock" size={17} /> 2-month course</span>
+            <span className="learning-duration">
+              <Icon name="clock" size={17} /> 2-month course
+            </span>
           </div>
-          <div className="learning-hero-orbit" aria-hidden="true"><span /><span /><span /></div>
+          <div className="learning-hero-orbit" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
         </div>
       </section>
 
-      <section className="section learning-tracks-section" aria-labelledby="learning-tracks-title">
+      <section
+        className="section learning-tracks-section"
+        aria-labelledby="learning-tracks-title"
+      >
         <div className="container">
           <SectionHeading
             eyebrow="Two learning paths"
@@ -1856,7 +2330,10 @@ function LearningPage() {
           </SectionHeading>
           <div className="learning-track-grid">
             {learningTracks.map((track) => (
-              <article className={`learning-track-card reveal learning-track-${track.id}`} key={track.id}>
+              <article
+                className={`learning-track-card reveal learning-track-${track.id}`}
+                key={track.id}
+              >
                 <div className="learning-track-topline">
                   <span>{track.number}</span>
                   <span className="learning-track-pill">2 months</span>
@@ -1865,10 +2342,17 @@ function LearningPage() {
                 <p>{track.subtitle}</p>
                 <ul>
                   {track.topics.map((topic) => (
-                    <li key={topic}><Icon name="check" size={16} />{topic}</li>
+                    <li key={topic}>
+                      <Icon name="check" size={16} />
+                      {topic}
+                    </li>
                   ))}
                 </ul>
-                <button type="button" className="learning-track-link" onClick={() => chooseTrack(track.id)}>
+                <button
+                  type="button"
+                  className="learning-track-link"
+                  onClick={() => chooseTrack(track.id)}
+                >
                   Register for free demo <Icon name="arrow" size={17} />
                 </button>
               </article>
@@ -1877,105 +2361,183 @@ function LearningPage() {
         </div>
       </section>
 
-      <section className="section learning-registration-section" id="demo-registration">
+      <section
+        className="section learning-registration-section"
+        id="demo-registration"
+      >
         <div className="container learning-registration-layout">
           <div className="learning-registration-copy reveal">
-            <span className="eyebrow"><span className="eyebrow-dot" />Your first step</span>
-            <h2>Try a demo class. <span>Free.</span></h2>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" />
+              Your first step
+            </span>
+            <h2>
+              Try a demo class. <span>Free.</span>
+            </h2>
             <p>
               Get a feel for the learning experience, meet the course team, and
               see which path is right for you. Choose either the technical or
               non-technical demo below.
             </p>
             <div className="learning-registration-points">
-              <div><span>01</span><p>Pick your learning path</p></div>
-              <div><span>02</span><p>Join its dedicated demo session</p></div>
-              <div><span>03</span><p>Explore practical AI engineering</p></div>
+              <div>
+                <span>01</span>
+                <p>Pick your learning path</p>
+              </div>
+              <div>
+                <span>02</span>
+                <p>Join its dedicated demo session</p>
+              </div>
+              <div>
+                <span>03</span>
+                <p>Explore practical AI engineering</p>
+              </div>
             </div>
           </div>
 
           <form className="learning-form reveal" onSubmit={submitRegistration}>
             <div className="learning-form-heading">
-              <span className="learning-form-kicker">FREE DEMO REGISTRATION</span>
+              <span className="learning-form-kicker">
+                FREE DEMO REGISTRATION
+              </span>
               <h3>Save your place</h3>
-              <p>Your details stay in this frontend preview and are not sent or saved.</p>
             </div>
             <div className="learning-form-row">
               <div className="learning-field">
-                <label htmlFor="learning-first-name">First name <span>*</span></label>
-                <input id="learning-first-name" name="firstName" autoComplete="given-name" required placeholder="First name" />
+                <label htmlFor="learning-first-name">
+                  First name <span>*</span>
+                </label>
+                <input
+                  id="learning-first-name"
+                  name="firstName"
+                  autoComplete="given-name"
+                  required
+                  placeholder="First name"
+                />
               </div>
               <div className="learning-field">
-                <label htmlFor="learning-last-name">Last name <span>*</span></label>
-                <input id="learning-last-name" name="lastName" autoComplete="family-name" required placeholder="Last name" />
+                <label htmlFor="learning-last-name">
+                  Last name <span>*</span>
+                </label>
+                <input
+                  id="learning-last-name"
+                  name="lastName"
+                  autoComplete="family-name"
+                  required
+                  placeholder="Last name"
+                />
               </div>
             </div>
             <div className="learning-field">
-              <label htmlFor="learning-email">Email address <span>*</span></label>
-              <input id="learning-email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
+              <label htmlFor="learning-email">
+                Email address <span>*</span>
+              </label>
+              <input
+                id="learning-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                placeholder="you@example.com"
+              />
             </div>
             <div className="learning-field">
-              <label htmlFor="learning-phone">Phone number <span>*</span></label>
-              <input id="learning-phone" name="phone" type="tel" autoComplete="tel" required placeholder="+92 ..." />
+              <label htmlFor="learning-phone">
+                Phone number <span>*</span>
+              </label>
+              <input
+                id="learning-phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                required
+                placeholder="+92 ..."
+              />
             </div>
-            <div className="learning-form-row">
-              <div className="learning-field">
-                <label htmlFor="learning-status">Are you currently a student? <span>*</span></label>
-                <select
-                  id="learning-status"
-                  name="studentStatus"
-                  value={studentStatus}
-                  onChange={(event) => setStudentStatus(event.target.value)}
-                  required
-                >
-                  <option value="" disabled>Select one</option>
-                  <option value="student">Yes, I am a student</option>
-                  <option value="other">No</option>
-                </select>
-              </div>
-              <div className="learning-field">
-                <label htmlFor="learning-track">Choose a demo batch <span>*</span></label>
-                <select
-                  id="learning-track"
-                  name="courseTrack"
-                  value={courseTrack}
-                  onChange={(event) => setCourseTrack(event.target.value)}
-                  required
-                >
-                  <option value="" disabled>Select a free demo</option>
-                  <option value="technical">Technical batch demo · Free</option>
-                  <option value="non-technical">Non-technical batch demo · Free</option>
-                </select>
-              </div>
+            <div className="learning-field">
+              <label htmlFor="learning-status">
+                Are you currently a student? <span>*</span>
+              </label>
+              <select
+                id="learning-status"
+                name="studentStatus"
+                value={studentStatus}
+                onChange={(event) => setStudentStatus(event.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Select one
+                </option>
+                <option value="student">Yes, I am a student</option>
+                <option value="other">No</option>
+              </select>
+            </div>
+            <div className="learning-field">
+              <label htmlFor="learning-track">
+                Choose a demo batch <span>*</span>
+              </label>
+              <select
+                id="learning-track"
+                name="courseTrack"
+                value={courseTrack}
+                onChange={(event) => setCourseTrack(event.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Select a free demo
+                </option>
+                <option value="technical">Technical batch demo · Free</option>
+                <option value="non-technical">
+                  Non-technical batch demo · Free
+                </option>
+              </select>
             </div>
             {studentStatus === "student" && (
               <div className="learning-form-row learning-student-fields">
                 <div className="learning-field">
-                  <label htmlFor="learning-university">University <span>*</span></label>
-                  <input id="learning-university" name="university" required placeholder="Your university" />
+                  <label htmlFor="learning-university">
+                    University <span>*</span>
+                  </label>
+                  <input
+                    id="learning-university"
+                    name="university"
+                    required
+                    placeholder="Your university"
+                  />
                 </div>
                 <div className="learning-field">
-                  <label htmlFor="learning-degree">Degree / program <span>*</span></label>
-                  <input id="learning-degree" name="degree" required placeholder="e.g. BS Computer Science" />
+                  <label htmlFor="learning-degree">
+                    Degree / program <span>*</span>
+                  </label>
+                  <input
+                    id="learning-degree"
+                    name="degree"
+                    required
+                    placeholder="e.g. BS Computer Science"
+                  />
                 </div>
               </div>
             )}
-            {studentStatus === "other" && (
-              <div className="learning-field learning-student-fields">
-                <label htmlFor="learning-organization">University or organization <small>(optional)</small></label>
-                <input id="learning-organization" name="organization" placeholder="Where you study or work" />
-              </div>
-            )}
-            <label className="learning-consent">
-              <input type="checkbox" name="updatesConsent" />
-              <span>I'd like to receive occasional updates about new courses, products, and FutureSort news.</span>
-            </label>
-            <button type="submit" className="btn btn-primary learning-submit">
-              Register for the free demo <Icon name="arrow" size={17} />
+            <button
+              type="submit"
+              className="btn btn-primary learning-submit"
+              disabled={status.state === "sending"}
+            >
+              {status.state === "sending" ? (
+                "Submitting..."
+              ) : (
+                <>
+                  Register for the free demo <Icon name="arrow" size={17} />
+                </>
+              )}
             </button>
-            {submitted && (
-              <p className="learning-form-status" role="status">
-                Your details passed the form checks, but this preview does not send or store registrations yet.
+            {status.message && (
+              <p
+                className={`learning-form-status${status.state === "error" ? " is-error" : ""}`}
+                role="status"
+                aria-live="polite"
+              >
+                {status.message}
               </p>
             )}
           </form>
@@ -1984,9 +2546,14 @@ function LearningPage() {
 
       <section className="learning-bottom-cta">
         <div className="container learning-bottom-inner reveal">
-          <span className="eyebrow"><span className="eyebrow-dot" />Registrations open</span>
+          <span className="eyebrow">
+            <span className="eyebrow-dot" />
+            Registrations open
+          </span>
           <h2>Start with a free demo.</h2>
-          <a className="btn btn-primary" href="#demo-registration">Choose your batch <Icon name="arrow" size={17} /></a>
+          <a className="btn btn-primary" href="#demo-registration">
+            Choose your batch <Icon name="arrow" size={17} />
+          </a>
         </div>
       </section>
     </div>
@@ -2009,23 +2576,40 @@ function ServicesTimeline() {
       const steps = timeline.querySelectorAll(".service-timeline-step");
       if (!rail || !steps.length) return;
       const centers = Array.from(steps, (step) => {
-        const stepBounds = step.querySelector(".service-timeline-number").getBoundingClientRect();
+        const stepBounds = step
+          .querySelector(".service-timeline-number")
+          .getBoundingClientRect();
         return stepBounds.top + stepBounds.height / 2;
       });
-      const gridBounds = timeline.querySelector(".service-timeline-list").getBoundingClientRect();
+      const gridBounds = timeline
+        .querySelector(".service-timeline-list")
+        .getBoundingClientRect();
       rail.style.top = `${centers[0] - gridBounds.top}px`;
       rail.style.bottom = `${gridBounds.bottom - centers[centers.length - 1]}px`;
-      const progress = Math.max(0, Math.min(1,
-        ((window.innerHeight * 0.52) - centers[0]) /
-        Math.max(1, centers[centers.length - 1] - centers[0]),
-      ));
+      const progress = Math.max(
+        0,
+        Math.min(
+          1,
+          (window.innerHeight * 0.52 - centers[0]) /
+            Math.max(1, centers[centers.length - 1] - centers[0]),
+        ),
+      );
       timeline.style.setProperty("--service-progress", progress.toFixed(4));
-      timeline.style.setProperty("--service-marker-position", `${progress * 100}%`);
-      const nextIndex = centers.reduce((closest, center, index) =>
-        Math.abs(center - window.innerHeight * 0.52) <
-          Math.abs(centers[closest] - window.innerHeight * 0.52) ? index : closest,
-      0);
-      setActiveIndex((current) => current === nextIndex ? current : nextIndex);
+      timeline.style.setProperty(
+        "--service-marker-position",
+        `${progress * 100}%`,
+      );
+      const nextIndex = centers.reduce(
+        (closest, center, index) =>
+          Math.abs(center - window.innerHeight * 0.52) <
+          Math.abs(centers[closest] - window.innerHeight * 0.52)
+            ? index
+            : closest,
+        0,
+      );
+      setActiveIndex((current) =>
+        current === nextIndex ? current : nextIndex,
+      );
     };
 
     const requestUpdate = () => {
@@ -2054,11 +2638,15 @@ function ServicesTimeline() {
             key={item.id}
           >
             <div className="service-timeline-copy">
-              <span className="service-timeline-kicker">Service {item.number}</span>
+              <span className="service-timeline-kicker">
+                Service {item.number}
+              </span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
               <div className="service-timeline-tags">
-                {item.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                {item.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
               </div>
               <a href="portfolio.html" className="service-timeline-link">
                 Explore related work <Icon name="arrow" size={16} />
@@ -2077,7 +2665,13 @@ function ServicesPage() {
     <>
       <PageHero
         eyebrow="Our expertise"
-        title={<>Engineering that<br /><span>moves you forward.</span></>}
+        title={
+          <>
+            Engineering that
+            <br />
+            <span>moves you forward.</span>
+          </>
+        }
       >
         From AI automation to full product engineering, we bring the right
         people, architecture, and execution to each challenge.
@@ -2109,9 +2703,12 @@ function ServicesPage() {
             </a>
           </div>
           <div className="project-grid services-project-grid">
-            {projects.filter((project) => project.featured).slice(0, 3).map((project, index) => (
-              <ProjectCard project={project} index={index} key={project.id} />
-            ))}
+            {projects
+              .filter((project) => project.featured)
+              .slice(0, 3)
+              .map((project, index) => (
+                <ProjectCard project={project} index={index} key={project.id} />
+              ))}
           </div>
         </div>
       </section>
@@ -2168,7 +2765,10 @@ function TeamMemberCard({ member, index }) {
       <div className="team-member-photo-frame">
         <img
           src={member.image}
-          alt={member.alt || `Portrait of ${member.name}, ${member.position} at FutureSort`}
+          alt={
+            member.alt ||
+            `Portrait of ${member.name}, ${member.position} at FutureSort`
+          }
           width={member.width || 800}
           height={member.height || 1000}
           loading="lazy"
@@ -2206,23 +2806,38 @@ function TeamPage() {
     <>
       <PageHero
         eyebrow="Meet the team"
-        title={<>The <span>masterminds.</span></>}
+        title={
+          <>
+            The <span>masterminds.</span>
+          </>
+        }
       >
         Meet the people behind our engineering work: a focused team building
         useful software, practical AI, and meaningful partnerships.
       </PageHero>
-      <section className="team-section section-tight" aria-labelledby="team-heading">
+      <section
+        className="team-section section-tight"
+        aria-labelledby="team-heading"
+      >
         <div className="container">
           <div className="team-section-heading reveal">
-            <span className="eyebrow"><span className="eyebrow-dot" />The team</span>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" />
+              The team
+            </span>
             <h2 id="team-heading">The minds behind FutureSort</h2>
             <p className="team-section-sub">
-              A focused engineering team combining research rigor, full-stack craft, and practical AI delivery.
+              A focused engineering team combining research rigor, full-stack
+              craft, and practical AI delivery.
             </p>
           </div>
           <div className="team-member-grid">
             {teamMembers.map((member, index) => (
-              <TeamMemberCard member={member} index={index} key={member.id || member.name} />
+              <TeamMemberCard
+                member={member}
+                index={index}
+                key={member.id || member.name}
+              />
             ))}
           </div>
         </div>
@@ -2230,9 +2845,15 @@ function TeamPage() {
       <section className="team-values-section section">
         <div className="container">
           <div className="team-values-heading reveal">
-            <span className="eyebrow"><span className="eyebrow-dot" />Our core values</span>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" />
+              Our core values
+            </span>
             <h2>Principles that guide every build.</h2>
-            <p>The standards behind our decisions, our collaboration, and the work we put into the world.</p>
+            <p>
+              The standards behind our decisions, our collaboration, and the
+              work we put into the world.
+            </p>
           </div>
           <div className="team-values-grid">
             {teamValues.map((value, index) => (
@@ -2241,7 +2862,9 @@ function TeamPage() {
                 style={{ "--reveal-delay": `${index * 75}ms` }}
                 key={value.title}
               >
-                <span className="team-value-icon"><Icon name={value.icon} size={19} /></span>
+                <span className="team-value-icon">
+                  <Icon name={value.icon} size={19} />
+                </span>
                 <h3>{value.title}</h3>
                 <p>{value.text}</p>
               </article>
@@ -2260,14 +2883,13 @@ function TeamPage() {
 
 function ProjectCard({ project, index }) {
   const service = serviceItems.find((item) => item.id === project.serviceId);
-  const images = [
-    project.coverImage,
-    ...(project.screenshots || []),
-  ]
-    .map((image) => typeof image === "string" ? { src: image } : image)
+  const images = [project.coverImage, ...(project.screenshots || [])]
+    .map((image) => (typeof image === "string" ? { src: image } : image))
     .filter((image) => image?.src)
-    .filter((image, imageIndex, allImages) =>
-      allImages.findIndex((candidate) => candidate.src === image.src) === imageIndex
+    .filter(
+      (image, imageIndex, allImages) =>
+        allImages.findIndex((candidate) => candidate.src === image.src) ===
+        imageIndex,
     );
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -2291,7 +2913,9 @@ function ProjectCard({ project, index }) {
         className="project-card reveal"
         style={{ "--reveal-delay": `${(index % 2) * 100}ms` }}
       >
-        <div className={`project-visual visual-${(index % 6) + 1}${images.length ? " has-screenshot" : ""}`}>
+        <div
+          className={`project-visual visual-${(index % 6) + 1}${images.length ? " has-screenshot" : ""}`}
+        >
           {images.length ? (
             <button
               className="project-image-button"
@@ -2305,7 +2929,9 @@ function ProjectCard({ project, index }) {
                 loading="lazy"
                 decoding="async"
               />
-              <span className="image-zoom-hint">View screenshot <span aria-hidden="true">↗</span></span>
+              <span className="image-zoom-hint">
+                View screenshot <span aria-hidden="true">↗</span>
+              </span>
             </button>
           ) : (
             <div className="project-empty-visual">
@@ -2314,7 +2940,10 @@ function ProjectCard({ project, index }) {
             </div>
           )}
           {images.length > 1 && (
-            <div className="project-thumbnails" aria-label={`${project.title} screenshots`}>
+            <div
+              className="project-thumbnails"
+              aria-label={`${project.title} screenshots`}
+            >
               {images.map((image, imageIndex) => (
                 <button
                   type="button"
@@ -2324,12 +2953,7 @@ function ProjectCard({ project, index }) {
                   aria-label={`Show screenshot ${imageIndex + 1} of ${images.length}`}
                   aria-pressed={activeImage === imageIndex}
                 >
-                  <img
-                    src={image.src}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <img src={image.src} alt="" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>
@@ -2346,7 +2970,11 @@ function ProjectCard({ project, index }) {
               {project.year && <span>{project.year}</span>}
             </div>
             {project.liveUrl && (
-              <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Visit live project <Icon name="arrow" size={15} />
               </a>
             )}
@@ -2383,15 +3011,21 @@ function ProjectCard({ project, index }) {
 }
 
 function PortfolioPage() {
-  const portfolioPathMatch = window.location.pathname.match(/^\/portfolio\/([^/]+)\/?$/);
+  const portfolioPathMatch = window.location.pathname.match(
+    /^\/portfolio\/([^/]+)\/?$/,
+  );
   const projectSlug = portfolioPathMatch
     ? decodeURIComponent(portfolioPathMatch[1])
     : new URLSearchParams(window.location.search).get("project");
-  const selectedProject = projects.find((project) => project.slug === projectSlug);
+  const selectedProject = projects.find(
+    (project) => project.slug === projectSlug,
+  );
   if (projectSlug) {
-    return selectedProject
-      ? <ProjectDetail project={selectedProject} />
-      : <ProjectNotFound />;
+    return selectedProject ? (
+      <ProjectDetail project={selectedProject} />
+    ) : (
+      <ProjectNotFound />
+    );
   }
   return <ProjectGridPage />;
 }
@@ -2401,8 +3035,10 @@ function projectHref(project) {
 }
 
 function isPlaceholderValue(value) {
-  return typeof value === "string" &&
-    (/^\s*\[[^\]]+\]\s*$/.test(value) || /\[ADD/i.test(value));
+  return (
+    typeof value === "string" &&
+    (/^\s*\[[^\]]+\]\s*$/.test(value) || /\[ADD/i.test(value))
+  );
 }
 
 function getProjectStack(project) {
@@ -2423,25 +3059,36 @@ function getProjectStackGroups(project) {
 
 function ProjectGridPage() {
   const categories = [...new Set(projects.map((project) => project.category))];
-  const orderedProjects = [...projects].sort((a, b) => Number(b.featured) - Number(a.featured));
+  const orderedProjects = [...projects].sort(
+    (a, b) => Number(b.featured) - Number(a.featured),
+  );
   const [activeCategory, setActiveCategory] = useState(() => {
-    const requestedCategory = new URLSearchParams(window.location.search).get("category");
-    const requestedService = new URLSearchParams(window.location.search).get("service");
-    const legacyCategory = projects.find((project) => project.serviceId === requestedService)?.category;
+    const requestedCategory = new URLSearchParams(window.location.search).get(
+      "category",
+    );
+    const requestedService = new URLSearchParams(window.location.search).get(
+      "service",
+    );
+    const legacyCategory = projects.find(
+      (project) => project.serviceId === requestedService,
+    )?.category;
     const category = requestedCategory || legacyCategory;
     return categories.includes(category) ? category : "all";
   });
   const [searchText, setSearchText] = useState("");
   const filteredProjects = orderedProjects.filter((project) => {
-    const matchesCategory = activeCategory === "all" || project.category === activeCategory;
+    const matchesCategory =
+      activeCategory === "all" || project.category === activeCategory;
     const search = searchText.trim().toLowerCase();
-    const matchesSearch = !search || [
-      project.title,
-      project.tagline,
-      project.category,
-      project.industry,
-      ...getProjectStack(project),
-    ].some((value) => value.toLowerCase().includes(search));
+    const matchesSearch =
+      !search ||
+      [
+        project.title,
+        project.tagline,
+        project.category,
+        project.industry,
+        ...getProjectStack(project),
+      ].some((value) => value.toLowerCase().includes(search));
     return matchesCategory && matchesSearch;
   });
 
@@ -2451,7 +3098,11 @@ function ProjectGridPage() {
     url.searchParams.delete("service");
     if (category === "all") url.searchParams.delete("category");
     else url.searchParams.set("category", category);
-    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState(
+      {},
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
   };
 
   return (
@@ -2460,9 +3111,19 @@ function ProjectGridPage() {
         <div className="ambient ambient-one" aria-hidden="true" />
         <div className="ambient ambient-two" aria-hidden="true" />
         <div className="container page-hero-content portfolio-hero-content">
-          <span className="eyebrow"><span className="eyebrow-dot" />Selected work</span>
-          <h1>Thoughtful software.<br /><span>Measurable impact.</span></h1>
-          <p>Explore the products, platforms, and intelligent workflows behind each case study.</p>
+          <span className="eyebrow">
+            <span className="eyebrow-dot" />
+            Selected work
+          </span>
+          <h1>
+            Thoughtful software.
+            <br />
+            <span>Measurable impact.</span>
+          </h1>
+          <p>
+            Explore the products, platforms, and intelligent workflows behind
+            each case study.
+          </p>
         </div>
       </section>
       <section className="section section-tight portfolio-listing">
@@ -2476,16 +3137,29 @@ function ProjectGridPage() {
             onSearchTextChange={setSearchText}
           />
           <p className="portfolio-result-count" aria-live="polite">
-            Showing {filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"}
+            Showing {filteredProjects.length}{" "}
+            {filteredProjects.length === 1 ? "project" : "projects"}
           </p>
           {filteredProjects.length ? (
             <ProjectGrid projects={filteredProjects} />
           ) : (
             <div className="portfolio-empty" role="status">
-              <span className="service-icon"><Icon name="layers" size={23} /></span>
+              <span className="service-icon">
+                <Icon name="layers" size={23} />
+              </span>
               <h2>No matching projects yet</h2>
-              <p>Try a different search or category, or get in touch to ask about related work.</p>
-              <button type="button" className="text-link" onClick={() => { setSearchText(""); selectCategory("all"); }}>
+              <p>
+                Try a different search or category, or get in touch to ask about
+                related work.
+              </p>
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => {
+                  setSearchText("");
+                  selectCategory("all");
+                }}
+              >
                 Show all projects <Icon name="arrow" size={16} />
               </button>
             </div>
@@ -2501,19 +3175,30 @@ function ProjectGridPage() {
   );
 }
 
-function ProjectFilters({ categories, projects: allProjects, activeCategory, onSelectCategory, searchText, onSearchTextChange }) {
+function ProjectFilters({
+  categories,
+  projects: allProjects,
+  activeCategory,
+  onSelectCategory,
+  searchText,
+  onSearchTextChange,
+}) {
   const filters = [
     { label: "All projects", value: "all", count: allProjects.length },
     ...categories.map((category) => ({
       label: category,
       value: category,
-      count: allProjects.filter((project) => project.category === category).length,
+      count: allProjects.filter((project) => project.category === category)
+        .length,
     })),
   ];
 
   return (
     <div className="portfolio-controls">
-      <div className="portfolio-filters" aria-label="Filter projects by category">
+      <div
+        className="portfolio-filters"
+        aria-label="Filter projects by category"
+      >
         {filters.map((filter) => (
           <button
             type="button"
@@ -2547,18 +3232,26 @@ function ProjectGrid({ projects: visibleProjects }) {
   useLayoutEffect(() => {
     const cards = gridRef.current?.querySelectorAll("[data-project-slug]");
     if (!cards) return;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const currentPositions = new Map();
     cards.forEach((card) => {
       const bounds = card.getBoundingClientRect();
-      currentPositions.set(card.dataset.projectSlug, { x: bounds.left, y: bounds.top });
+      currentPositions.set(card.dataset.projectSlug, {
+        x: bounds.left,
+        y: bounds.top,
+      });
       const previous = previousPositions.current.get(card.dataset.projectSlug);
       if (!reducedMotion && previous) {
         const deltaX = previous.x - bounds.left;
         const deltaY = previous.y - bounds.top;
         if (deltaX || deltaY) {
           card.animate(
-            [{ transform: `translate(${deltaX}px, ${deltaY}px)` }, { transform: "translate(0, 0)" }],
+            [
+              { transform: `translate(${deltaX}px, ${deltaY}px)` },
+              { transform: "translate(0, 0)" },
+            ],
             { duration: 280, easing: "ease-out" },
           );
         }
@@ -2570,7 +3263,11 @@ function ProjectGrid({ projects: visibleProjects }) {
   return (
     <div className="portfolio-project-grid" ref={gridRef}>
       {visibleProjects.map((project, index) => (
-        <PortfolioProjectCard project={project} index={index} key={project.slug} />
+        <PortfolioProjectCard
+          project={project}
+          index={index}
+          key={project.slug}
+        />
       ))}
     </div>
   );
@@ -2583,16 +3280,22 @@ function PortfolioProjectCard({ project, index }) {
   useEffect(() => {
     const card = cardRef.current;
     if (!card) return undefined;
-    if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      !("IntersectionObserver" in window) ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       setIsVisible(true);
       return undefined;
     }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsVisible(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.1 });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
     observer.observe(card);
     return () => observer.disconnect();
   }, []);
@@ -2604,10 +3307,18 @@ function PortfolioProjectCard({ project, index }) {
       data-project-slug={project.slug}
       style={{ "--card-delay": `${(index % 2) * 60}ms` }}
     >
-      <a className="portfolio-card-link" href={projectHref(project)} aria-labelledby={`project-title-${project.slug}`}>
-        <div className={`portfolio-browser-frame${project.darkScreenshot ? " is-dark" : ""}`}>
+      <a
+        className="portfolio-card-link"
+        href={projectHref(project)}
+        aria-labelledby={`project-title-${project.slug}`}
+      >
+        <div
+          className={`portfolio-browser-frame${project.darkScreenshot ? " is-dark" : ""}`}
+        >
           <div className="portfolio-browser-bar" aria-hidden="true">
-            <span /><span /><span />
+            <span />
+            <span />
+            <span />
             <i>{project.slug}.app</i>
           </div>
           <img
@@ -2624,13 +3335,20 @@ function PortfolioProjectCard({ project, index }) {
             <span>{project.category}</span>
             <span>{project.industry}</span>
             {project.confidential && (
-              <span className="portfolio-confidential-label"><Icon name="lock" size={13} />Private client system</span>
+              <span className="portfolio-confidential-label">
+                <Icon name="lock" size={13} />
+                Private client system
+              </span>
             )}
           </div>
           <h2 id={`project-title-${project.slug}`}>{project.title}</h2>
           <p className="portfolio-project-tagline">{project.tagline}</p>
-          <TechStackPills items={project.cardStack || getProjectStack(project).slice(0, 4)} />
-          <span className="portfolio-case-link">View case study <Icon name="arrow" size={16} /></span>
+          <TechStackPills
+            items={project.cardStack || getProjectStack(project).slice(0, 4)}
+          />
+          <span className="portfolio-case-link">
+            View case study <Icon name="arrow" size={16} />
+          </span>
         </div>
       </a>
     </article>
@@ -2640,7 +3358,9 @@ function PortfolioProjectCard({ project, index }) {
 function TechStackPills({ items, compact = false }) {
   return (
     <ul className={`portfolio-stack-pills${compact ? " is-compact" : ""}`}>
-      {items.map((item) => <li key={item}>{item}</li>)}
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
     </ul>
   );
 }
@@ -2649,24 +3369,45 @@ function ProjectDetail({ project }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const lightboxRef = useRef(null);
   const closeButtonRef = useRef(null);
-  const gallery = project.screenshots?.length ? project.screenshots : [project.coverImage];
-  const visibleResults = project.results.filter((result) => !isPlaceholderValue(result));
+  const gallery = project.screenshots?.length
+    ? project.screenshots
+    : [project.coverImage];
+  const visibleResults = project.results.filter(
+    (result) => !isPlaceholderValue(result),
+  );
   const showRole = project.role && !isPlaceholderValue(project.role);
-  const showTimeline = project.timeline && !isPlaceholderValue(project.timeline);
-  const liveUrl = project.liveUrl && !isPlaceholderValue(project.liveUrl) ? project.liveUrl : null;
-  const repoUrl = project.repoUrl && !isPlaceholderValue(project.repoUrl) ? project.repoUrl : null;
+  const showTimeline =
+    project.timeline && !isPlaceholderValue(project.timeline);
+  const liveUrl =
+    project.liveUrl && !isPlaceholderValue(project.liveUrl)
+      ? project.liveUrl
+      : null;
+  const repoUrl =
+    project.repoUrl && !isPlaceholderValue(project.repoUrl)
+      ? project.repoUrl
+      : null;
   const stackGroups = getProjectStackGroups(project);
-  const nextProject = projects[(projects.findIndex((item) => item.slug === project.slug) + 1) % projects.length];
+  const nextProject =
+    projects[
+      (projects.findIndex((item) => item.slug === project.slug) + 1) %
+        projects.length
+    ];
 
   useEffect(() => {
     if (lightboxIndex === null) return undefined;
     const previousFocus = document.activeElement;
     const onKeyDown = (event) => {
       if (event.key === "Escape") setLightboxIndex(null);
-      if (event.key === "ArrowRight") setLightboxIndex((current) => (current + 1) % gallery.length);
-      if (event.key === "ArrowLeft") setLightboxIndex((current) => (current - 1 + gallery.length) % gallery.length);
+      if (event.key === "ArrowRight")
+        setLightboxIndex((current) => (current + 1) % gallery.length);
+      if (event.key === "ArrowLeft")
+        setLightboxIndex(
+          (current) => (current - 1 + gallery.length) % gallery.length,
+        );
       if (event.key === "Tab") {
-        const focusable = lightboxRef.current?.querySelectorAll("button:not([disabled])");
+        const focusable = lightboxRef.current?.querySelectorAll(
+          "button:not([disabled])",
+        );
         if (!focusable?.length) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
@@ -2693,37 +3434,75 @@ function ProjectDetail({ project }) {
     <div className="portfolio-detail">
       <header className="portfolio-detail-hero">
         <div className="container">
-          <a className="portfolio-back-link" href="portfolio.html"><Icon name="arrow" size={15} />All projects</a>
+          <a className="portfolio-back-link" href="portfolio.html">
+            <Icon name="arrow" size={15} />
+            All projects
+          </a>
           <div className="portfolio-detail-intro">
             <div>
               <div className="portfolio-project-labels">
-                <span>{project.category}</span><span>{project.industry}</span>
+                <span>{project.category}</span>
+                <span>{project.industry}</span>
                 {project.confidential && (
-                  <span className="portfolio-confidential-label"><Icon name="lock" size={13} />Private client system</span>
+                  <span className="portfolio-confidential-label">
+                    <Icon name="lock" size={13} />
+                    Private client system
+                  </span>
                 )}
               </div>
               <h1>{project.title}</h1>
               <p>{project.tagline}</p>
             </div>
           </div>
-          <div className={`portfolio-detail-cover${project.darkScreenshot ? " is-dark" : ""}`}>
-            <img src={project.coverImage} alt={project.coverAlt || project.imageAlt || `${project.title} product overview`} width="1280" height="800" fetchPriority="high" />
+          <div
+            className={`portfolio-detail-cover${project.darkScreenshot ? " is-dark" : ""}`}
+          >
+            <img
+              src={project.coverImage}
+              alt={
+                project.coverAlt ||
+                project.imageAlt ||
+                `${project.title} product overview`
+              }
+              width="1280"
+              height="800"
+              fetchPriority="high"
+            />
           </div>
         </div>
       </header>
       <div className="portfolio-detail-content">
         <section className="portfolio-facts-section">
           <div className="container portfolio-facts">
-            <div><span>Industry</span><strong>{project.industry}</strong></div>
-            {showRole && <div><span>Role</span><strong>{project.role}</strong></div>}
-            {showTimeline && <div><span>Timeline</span><strong>{project.timeline}</strong></div>}
-            <div className="portfolio-fact-stack"><span>Stack</span><TechStackPills items={getProjectStack(project)} compact /></div>
+            <div>
+              <span>Industry</span>
+              <strong>{project.industry}</strong>
+            </div>
+            {showRole && (
+              <div>
+                <span>Role</span>
+                <strong>{project.role}</strong>
+              </div>
+            )}
+            {showTimeline && (
+              <div>
+                <span>Timeline</span>
+                <strong>{project.timeline}</strong>
+              </div>
+            )}
+            <div className="portfolio-fact-stack">
+              <span>Stack</span>
+              <TechStackPills items={getProjectStack(project)} compact />
+            </div>
           </div>
         </section>
         <section className="section portfolio-detail-section">
           <div className="container portfolio-story-grid">
             <div className="portfolio-story-heading">
-              <span className="eyebrow"><span className="eyebrow-dot" />The challenge</span>
+              <span className="eyebrow">
+                <span className="eyebrow-dot" />
+                The challenge
+              </span>
               <h2>The problem</h2>
             </div>
             <p className="portfolio-story-text">{project.problem}</p>
@@ -2733,14 +3512,20 @@ function ProjectDetail({ project }) {
           <div className="container">
             <div className="portfolio-story-grid portfolio-solution-grid">
               <div className="portfolio-story-heading">
-                <span className="eyebrow"><span className="eyebrow-dot" />Our approach</span>
+                <span className="eyebrow">
+                  <span className="eyebrow-dot" />
+                  Our approach
+                </span>
                 <h2>The solution</h2>
                 <p className="portfolio-story-text">{project.solution}</p>
               </div>
               <div className="portfolio-feature-list">
                 <span className="portfolio-detail-overline">Key features</span>
                 {project.features.map((feature, index) => (
-                  <div key={feature}><span>{String(index + 1).padStart(2, "0")}</span><p>{feature}</p></div>
+                  <div key={feature}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <p>{feature}</p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -2750,13 +3535,25 @@ function ProjectDetail({ project }) {
           <section className="section portfolio-detail-section portfolio-workflow-section">
             <div className="container">
               <div className="portfolio-detail-section-heading">
-                <span className="eyebrow"><span className="eyebrow-dot" />From one request to the next step</span>
+                <span className="eyebrow">
+                  <span className="eyebrow-dot" />
+                  From one request to the next step
+                </span>
                 <h2>How it works</h2>
               </div>
-              <div className="portfolio-workflow" aria-label="Career supervisor routes work to specialist agents">
+              <div
+                className="portfolio-workflow"
+                aria-label="Career supervisor routes work to specialist agents"
+              >
                 {project.workflow.map((step, index) => (
-                  <div className="portfolio-workflow-step" key={step} style={{ "--workflow-delay": `${index * 70}ms` }}>
-                    <span>{index === 0 ? "Supervisor" : `Agent 0${index}`}</span>
+                  <div
+                    className="portfolio-workflow-step"
+                    key={step}
+                    style={{ "--workflow-delay": `${index * 70}ms` }}
+                  >
+                    <span>
+                      {index === 0 ? "Supervisor" : `Agent 0${index}`}
+                    </span>
                     <strong>{step}</strong>
                   </div>
                 ))}
@@ -2767,7 +3564,10 @@ function ProjectDetail({ project }) {
         <section className="section portfolio-detail-section">
           <div className="container">
             <div className="portfolio-detail-section-heading">
-              <span className="eyebrow"><span className="eyebrow-dot" />Built with care</span>
+              <span className="eyebrow">
+                <span className="eyebrow-dot" />
+                Built with care
+              </span>
               <h2>Technology stack</h2>
             </div>
             <div className="portfolio-tech-groups">
@@ -2783,9 +3583,14 @@ function ProjectDetail({ project }) {
         <section className="section section-darker portfolio-detail-section">
           <div className="container">
             <div className="portfolio-detail-section-heading">
-              <span className="eyebrow"><span className="eyebrow-dot" />Inside the product</span>
+              <span className="eyebrow">
+                <span className="eyebrow-dot" />
+                Inside the product
+              </span>
               <h2>Product snapshots</h2>
-              <p>Explore the key screens and workflows behind {project.title}.</p>
+              <p>
+                Explore the key screens and workflows behind {project.title}.
+              </p>
             </div>
             <div className="portfolio-gallery">
               {gallery.map((image, index) => (
@@ -2796,10 +3601,21 @@ function ProjectDetail({ project }) {
                   key={image}
                   aria-label={`Open ${project.title} screenshot ${index + 1}`}
                 >
-                  <div className="portfolio-gallery-browser-bar" aria-hidden="true"><span /><span /><span /></div>
+                  <div
+                    className="portfolio-gallery-browser-bar"
+                    aria-hidden="true"
+                  >
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                   <img
                     src={image}
-                    alt={project.screenshotAlts?.[index] || project.imageAlt || `${project.title} interface screenshot ${index + 1}`}
+                    alt={
+                      project.screenshotAlts?.[index] ||
+                      project.imageAlt ||
+                      `${project.title} interface screenshot ${index + 1}`
+                    }
                     width="1280"
                     height="800"
                     loading="lazy"
@@ -2808,44 +3624,92 @@ function ProjectDetail({ project }) {
                 </button>
               ))}
             </div>
-            {project.confidential && <p className="portfolio-privacy-note">{project.privacyNote || "Client data blurred for privacy"}</p>}
+            {project.confidential && (
+              <p className="portfolio-privacy-note">
+                {project.privacyNote || "Client data blurred for privacy"}
+              </p>
+            )}
           </div>
         </section>
-        {visibleResults.length > 0 && <section className="section portfolio-detail-section">
-          <div className="container portfolio-results-layout">
-            <div className="portfolio-story-heading">
-              <span className="eyebrow"><span className="eyebrow-dot" />The outcome</span>
-              <h2>Results</h2>
-              {project.slug === "atlas-learning" && (
-                <p>Sample outcomes for this placeholder case study. Replace with verified project metrics before publishing.</p>
-              )}
+        {visibleResults.length > 0 && (
+          <section className="section portfolio-detail-section">
+            <div className="container portfolio-results-layout">
+              <div className="portfolio-story-heading">
+                <span className="eyebrow">
+                  <span className="eyebrow-dot" />
+                  The outcome
+                </span>
+                <h2>Results</h2>
+                {project.slug === "atlas-learning" && (
+                  <p>
+                    Sample outcomes for this placeholder case study. Replace
+                    with verified project metrics before publishing.
+                  </p>
+                )}
+              </div>
+              <ul className="portfolio-results-list">
+                {visibleResults.map((result) => (
+                  <li key={result}>
+                    <Icon name="check" size={18} />
+                    {result}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="portfolio-results-list">
-              {visibleResults.map((result) => <li key={result}><Icon name="check" size={18} />{result}</li>)}
-            </ul>
-          </div>
-        </section>}
+          </section>
+        )}
         {(liveUrl || repoUrl) && (
           <section className="portfolio-external-links">
             <div className="container">
-              {liveUrl && <a className="btn btn-primary" href={liveUrl} target="_blank" rel="noopener noreferrer">Live site ↗</a>}
-              {repoUrl && <a className="btn btn-ghost" href={repoUrl} target="_blank" rel="noopener noreferrer">View repository <Icon name="arrow" size={17} /></a>}
+              {liveUrl && (
+                <a
+                  className="btn btn-primary"
+                  href={liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Live site ↗
+                </a>
+              )}
+              {repoUrl && (
+                <a
+                  className="btn btn-ghost"
+                  href={repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View repository <Icon name="arrow" size={17} />
+                </a>
+              )}
             </div>
           </section>
         )}
         <section className="portfolio-detail-cta">
           <div className="container portfolio-detail-cta-inner">
             <div>
-              <span className="eyebrow"><span className="eyebrow-dot" />Have a similar challenge?</span>
-              <h2>{project.ctaTitle || (project.confidential ? "Need a system like this?" : "Need something similar?")}</h2>
+              <span className="eyebrow">
+                <span className="eyebrow-dot" />
+                Have a similar challenge?
+              </span>
+              <h2>
+                {project.ctaTitle ||
+                  (project.confidential
+                    ? "Need a system like this?"
+                    : "Need something similar?")}
+              </h2>
               <p>Let’s talk about what your team needs next.</p>
             </div>
-            <a className="btn btn-primary" href="contact.html">Start a project <Icon name="arrow" size={17} /></a>
+            <a className="btn btn-primary" href="contact.html">
+              Start a project <Icon name="arrow" size={17} />
+            </a>
           </div>
         </section>
         <div className="container portfolio-next-project">
           <span>Next project</span>
-          <a href={projectHref(nextProject)}>{nextProject.title}<Icon name="arrow" size={17} /></a>
+          <a href={projectHref(nextProject)}>
+            {nextProject.title}
+            <Icon name="arrow" size={17} />
+          </a>
         </div>
       </div>
       {lightboxIndex !== null && (
@@ -2859,13 +3723,47 @@ function ProjectDetail({ project }) {
             if (event.target === event.currentTarget) setLightboxIndex(null);
           }}
         >
-          <button ref={closeButtonRef} type="button" className="portfolio-lightbox-close" onClick={() => setLightboxIndex(null)} aria-label="Close image">
+          <button
+            ref={closeButtonRef}
+            type="button"
+            className="portfolio-lightbox-close"
+            onClick={() => setLightboxIndex(null)}
+            aria-label="Close image"
+          >
             <Icon name="close" size={22} />
           </button>
-          <button type="button" className="portfolio-lightbox-arrow is-previous" onClick={() => setLightboxIndex((lightboxIndex - 1 + gallery.length) % gallery.length)} aria-label="Previous image"><Icon name="arrow" size={20} /></button>
-          <img src={gallery[lightboxIndex]} alt={`${project.title} interface screenshot ${lightboxIndex + 1}`} width="1280" height="800" />
-          <button type="button" className="portfolio-lightbox-arrow" onClick={() => setLightboxIndex((lightboxIndex + 1) % gallery.length)} aria-label="Next image"><Icon name="arrow" size={20} /></button>
-          <p>{String(lightboxIndex + 1).padStart(2, "0")} / {String(gallery.length).padStart(2, "0")}</p>
+          <button
+            type="button"
+            className="portfolio-lightbox-arrow is-previous"
+            onClick={() =>
+              setLightboxIndex(
+                (lightboxIndex - 1 + gallery.length) % gallery.length,
+              )
+            }
+            aria-label="Previous image"
+          >
+            <Icon name="arrow" size={20} />
+          </button>
+          <img
+            src={gallery[lightboxIndex]}
+            alt={`${project.title} interface screenshot ${lightboxIndex + 1}`}
+            width="1280"
+            height="800"
+          />
+          <button
+            type="button"
+            className="portfolio-lightbox-arrow"
+            onClick={() =>
+              setLightboxIndex((lightboxIndex + 1) % gallery.length)
+            }
+            aria-label="Next image"
+          >
+            <Icon name="arrow" size={20} />
+          </button>
+          <p>
+            {String(lightboxIndex + 1).padStart(2, "0")} /{" "}
+            {String(gallery.length).padStart(2, "0")}
+          </p>
         </div>
       )}
     </div>
@@ -2876,9 +3774,14 @@ function ProjectNotFound() {
   return (
     <section className="section portfolio-not-found">
       <div className="container">
-        <span className="eyebrow"><span className="eyebrow-dot" />Project not found</span>
+        <span className="eyebrow">
+          <span className="eyebrow-dot" />
+          Project not found
+        </span>
         <h1>This case study isn’t available.</h1>
-        <a className="btn btn-primary" href="portfolio.html">Back to portfolio <Icon name="arrow" size={17} /></a>
+        <a className="btn btn-primary" href="portfolio.html">
+          Back to portfolio <Icon name="arrow" size={17} />
+        </a>
       </div>
     </section>
   );
@@ -2886,18 +3789,33 @@ function ProjectNotFound() {
 
 function ContactPage() {
   const [sending, setSending] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState({ state: "idle", message: "" });
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     setSending(true);
-    setSubmitted(false);
-    window.setTimeout(() => {
+    setStatus({ state: "sending", message: "" });
+    const values = new FormData(form);
+    try {
+      await submitForm("inquiries", {
+        source: "contact",
+        name: values.get("name"),
+        email: values.get("email"),
+        project_type: values.get("projectType"),
+        project_vision: values.get("projectVision"),
+      });
       form.reset();
       setSending(false);
-      setSubmitted(true);
-    }, 650);
+      setStatus({
+        state: "success",
+        message:
+          "Thanks, your enquiry has been sent. We will be in touch soon.",
+      });
+    } catch (error) {
+      setSending(false);
+      setStatus({ state: "error", message: error.message });
+    }
   };
 
   return (
@@ -2928,13 +3846,13 @@ function ContactPage() {
               wish worked better. We will take it from there.
             </p>
             <div className="contact-details">
-              <a href="mailto:hello@futuresorttech.com">
+              <a href="mailto:abdullahamirr9@gmail.com">
                 <span className="detail-icon">
                   <Icon name="mail" size={19} />
                 </span>
                 <span>
                   <strong>Email</strong>
-                  <small>hello@futuresorttech.com</small>
+                  <small>abdullahamirr9@gmail.com</small>
                 </span>
                 <Icon name="arrow" size={16} />
               </a>
@@ -2943,7 +3861,7 @@ function ContactPage() {
                   <Icon name="pin" size={19} />
                 </span>
                 <span>
-                  <strong>Studio</strong>
+                  <strong>Workplace</strong>
                   <small>Lahore, Pakistan</small>
                 </span>
               </div>
@@ -2953,13 +3871,9 @@ function ContactPage() {
                 </span>
                 <span>
                   <strong>Response time</strong>
-                  <small>Usually within 1–2 business days</small>
+                  <small>Usually within 12 hours</small>
                 </span>
               </div>
-            </div>
-            <div className="contact-aside-note">
-              <span className="status-dot" />
-              No pressure. Just a useful first conversation.
             </div>
           </div>
           <div className="form-card reveal">
@@ -2969,9 +3883,6 @@ function ContactPage() {
                 Tell us about it
               </span>
               <h2>What are you building?</h2>
-              <p>
-                Fields marked <span aria-hidden="true">*</span> are required.
-              </p>
             </div>
             <form onSubmit={onSubmit}>
               <div className="field-row">
@@ -2984,6 +3895,7 @@ function ContactPage() {
                     name="name"
                     autoComplete="name"
                     required
+                    maxLength={120}
                     placeholder="Alex Morgan"
                   />
                 </div>
@@ -2997,47 +3909,49 @@ function ContactPage() {
                     type="email"
                     autoComplete="email"
                     required
+                    maxLength={254}
                     placeholder="alex@company.com"
                   />
                 </div>
               </div>
               <div className="field-row">
                 <div className="field">
-                  <label htmlFor="company">
-                    Company <small>(optional)</small>
+                  <label htmlFor="service">
+                    What do you need help with? <span>*</span>
                   </label>
-                  <input
-                    id="company"
-                    name="company"
-                    autoComplete="organization"
-                    placeholder="Your company"
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="service">What do you need help with?</label>
                   <select
                     id="service"
-                    name="service"
-                    defaultValue="Not sure yet"
+                    name="projectType"
+                    required
+                    defaultValue=""
                   >
-                    <option>AI automation</option>
-                    <option>Agentic AI</option>
-                    <option>SaaS product development</option>
-                    <option>Web application</option>
-                    <option>Mobile application</option>
-                    <option>Custom software</option>
-                    <option>Not sure yet</option>
+                    <option value="" disabled>
+                      Select a service
+                    </option>
+                    <option value="SaaS">SaaS</option>
+                    <option value="Web Development">Web development</option>
+                    <option value="Custom Software">Custom software</option>
+                    <option value="AI Automation">AI automation</option>
+                    <option value="Agentic AI">Agentic AI</option>
+                    <option value="Mobile Applications">
+                      Mobile applications
+                    </option>
+                    <option value="API & Integrations">
+                      API &amp; integrations
+                    </option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
               </div>
               <div className="field">
                 <label htmlFor="message">
-                  A little about the project <span>*</span>
+                  Project idea or vision <span>*</span>
                 </label>
                 <textarea
                   id="message"
-                  name="message"
+                  name="projectVision"
                   required
+                  maxLength={1500}
                   rows="5"
                   placeholder="What are you hoping to build or make easier?"
                 ></textarea>
@@ -3055,15 +3969,13 @@ function ContactPage() {
                   </>
                 )}
               </button>
-              {submitted && (
-                <p className="form-note" role="status">
-                  Thanks — your message is ready. This demo form is not
-                  connected to a submission service yet, so please email us
-                  directly at{" "}
-                  <a href="mailto:hello@futuresorttech.com">
-                    hello@futuresorttech.com
-                  </a>
-                  .
+              {status.message && (
+                <p
+                  className={`form-note${status.state === "error" ? " is-error" : ""}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {status.message}
                 </p>
               )}
               <p className="form-privacy">
@@ -3078,15 +3990,18 @@ function ContactPage() {
 }
 
 function App() {
-  const portfolioPathMatch = window.location.pathname.match(/^\/portfolio\/([^/]+)\/?$/);
+  const portfolioPathMatch = window.location.pathname.match(
+    /^\/portfolio\/([^/]+)\/?$/,
+  );
   const currentPage = portfolioPathMatch
     ? "Portfolio"
     : pages[window.location.pathname] || "Home";
-  const portfolioSlug = currentPage === "Portfolio"
-    ? portfolioPathMatch
-      ? decodeURIComponent(portfolioPathMatch[1])
-      : new URLSearchParams(window.location.search).get("project")
-    : null;
+  const portfolioSlug =
+    currentPage === "Portfolio"
+      ? portfolioPathMatch
+        ? decodeURIComponent(portfolioPathMatch[1])
+        : new URLSearchParams(window.location.search).get("project")
+      : null;
   const portfolioProject = portfolioSlug
     ? projects.find((project) => project.slug === portfolioSlug)
     : null;
@@ -3113,7 +4028,10 @@ function App() {
       description.setAttribute(
         "content",
         currentPage === "Portfolio" && portfolioProject
-          ? `${portfolioProject.tagline} ${portfolioProject.solution}`.slice(0, 160)
+          ? `${portfolioProject.tagline} ${portfolioProject.solution}`.slice(
+              0,
+              160,
+            )
           : pageDescriptions[currentPage],
       );
     window.scrollTo(0, 0);
