@@ -6,11 +6,11 @@ export const teamMembers = [
     id: "atiq-ur-rehman",
     name: "Atiq ur Rehman",
     position: "FOUNDER & CHIEF EXECUTIVE OFFICER",
-    description: "Leads FutureSort as founder; AI/ML, frontend development and database design specialist.",
-    image: "/team/atiq-ur-rehman.webp",
+    description: "Leads FutureSort as founder; Full Stack Developer specializing in AI/ML and database design.",
+    image: "/team/atiq.jpeg",
     alt: "Portrait of Atiq ur Rehman, Founder & Chief Executive Officer at FutureSort",
-    width: 800,
-    height: 1000,
+    width: 1086,
+    height: 1448,
     linkedin: "", // Add LinkedIn profile URL here, e.g. "https://www.linkedin.com/in/atiq-ur-rehman"
   },
   {

@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     database_url: str = ""
     supabase_url: str = ""
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    chatbot_api_key: str = ""
+    chatbot_api_base_url: str = "https://api.groq.com/openai/v1"
+    chatbot_model: str = "openai/gpt-oss-120b"
 
     @property
     def allowed_origins(self) -> list[str]:

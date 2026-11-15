@@ -3,6 +3,7 @@ import { projects } from "./data/projects.js";
 import { teamMembers } from "./data/team.js";
 import { clientReviews } from "./data/reviews.js";
 import { submitForm } from "./api.js";
+import Chatbot from "./Chatbot.jsx";
 import logoFull from "../assets/logo-full.png";
 
 const pages = {
@@ -268,10 +269,12 @@ function Header({ currentPage }) {
             href="index.html"
             aria-label="FutureSort Technologies home"
           >
-            <span
+            <img
               className="brand-image"
-              style={{ "--logo-mask": `url("${logoFull}")` }}
-              aria-hidden="true"
+              src={logoFull}
+              alt=""
+              width="1017"
+              height="245"
             />
           </a>
           <nav
@@ -384,8 +387,8 @@ function NetworkCanvas() {
       nodes = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
+        vx: (Math.random() - 0.5) * 1.5,
+        vy: (Math.random() - 0.5) * 1.5,
         phase: Math.random() * Math.PI * 2,
       }));
     };
@@ -398,7 +401,7 @@ function NetworkCanvas() {
           const other = nodes[j];
           const distance = Math.hypot(node.x - other.x, node.y - other.y);
           if (distance < 150) {
-            context.strokeStyle = `rgba(99, 202, 211, ${(1 - distance / 150) * 0.22})`;
+            context.strokeStyle = `rgba(12, 225, 239, ${(1 - distance / 150) * 0.22})`;
             context.lineWidth = 1;
             context.beginPath();
             context.moveTo(node.x, node.y);
@@ -410,7 +413,7 @@ function NetworkCanvas() {
         if (!reducedMotion) {
           node.x += node.vx;
           node.y += node.vy;
-          node.phase += 0.045;
+          node.phase += 0.12;
           if (node.x < -12) node.x = width + 12;
           if (node.x > width + 12) node.x = -12;
           if (node.y < -12) node.y = height + 12;
@@ -419,8 +422,8 @@ function NetworkCanvas() {
 
         const glow = (Math.sin(node.phase) + 1) / 2;
         context.beginPath();
-        context.fillStyle = `rgba(153, 230, 232, ${0.42 + glow * 0.3})`;
-        context.shadowColor = "rgba(53, 231, 238, 0.8)";
+        context.fillStyle = `rgba(12, 225, 239, ${0.42 + glow * 0.3})`;
+        context.shadowColor = "rgba(12, 225, 239, 0.8)";
         context.shadowBlur = 5 + glow * 5;
         context.arc(node.x, node.y, 1.2 + glow * 0.7, 0, Math.PI * 2);
         context.fill();
@@ -592,9 +595,9 @@ function BrainVisualLegacy() {
         height / 2,
         Math.min(width, height) * 0.42,
       );
-      glow.addColorStop(0, "rgba(70, 207, 204, 0.13)");
-      glow.addColorStop(0.52, "rgba(62, 113, 170, 0.055)");
-      glow.addColorStop(1, "rgba(8, 11, 17, 0)");
+      glow.addColorStop(0, "rgba(12, 225, 239, 0.13)");
+      glow.addColorStop(0.52, "rgba(22, 113, 166, 0.055)");
+      glow.addColorStop(1, "rgba(5, 15, 29, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
 
@@ -634,11 +637,11 @@ function BrainVisualLegacy() {
         brainX(0.12),
         brainY(0.9),
       );
-      stemFill.addColorStop(0, "rgba(86, 207, 204, 0.72)");
+      stemFill.addColorStop(0, "rgba(12, 225, 239, 0.72)");
       stemFill.addColorStop(1, "rgba(15, 31, 47, 0.94)");
       context.fillStyle = stemFill;
       context.fill(stem);
-      context.strokeStyle = "rgba(126, 238, 224, 0.62)";
+      context.strokeStyle = "rgba(12, 225, 239, 0.62)";
       context.lineWidth = 1.4;
       context.stroke(stem);
 
@@ -695,8 +698,8 @@ function BrainVisualLegacy() {
           brainX(side * 0.1),
           brainY(0.6),
         );
-        fill.addColorStop(0, "rgba(113, 227, 219, 0.72)");
-        fill.addColorStop(0.45, "rgba(47, 113, 133, 0.78)");
+        fill.addColorStop(0, "rgba(12, 225, 239, 0.72)");
+        fill.addColorStop(0.45, "rgba(22, 113, 166, 0.78)");
         fill.addColorStop(1, "rgba(12, 27, 43, 0.9)");
         context.fillStyle = fill;
         context.fillRect(
@@ -729,7 +732,7 @@ function BrainVisualLegacy() {
             context.strokeStyle =
               index % 2 === 0
                 ? "rgba(4, 17, 28, 0.62)"
-                : "rgba(173, 255, 239, 0.48)";
+                : "rgba(12, 225, 239, 0.48)";
             context.lineWidth = index % 3 === 0 ? 2.2 : 1.4;
             context.lineCap = "round";
             context.stroke();
@@ -738,9 +741,9 @@ function BrainVisualLegacy() {
         context.restore();
 
         context.beginPath();
-        context.strokeStyle = "rgba(155, 250, 233, 0.82)";
+        context.strokeStyle = "rgba(12, 225, 239, 0.82)";
         context.lineWidth = 1.35;
-        context.shadowColor = "rgba(65, 226, 218, 0.72)";
+        context.shadowColor = "rgba(12, 225, 239, 0.72)";
         context.shadowBlur = 10;
         context.stroke(lobe);
         context.shadowBlur = 0;
@@ -769,7 +772,7 @@ function BrainVisualLegacy() {
         brainX(0),
         brainY(0.47),
       );
-      context.strokeStyle = "rgba(169, 255, 239, 0.62)";
+      context.strokeStyle = "rgba(12, 225, 239, 0.62)";
       context.lineWidth = 0.85;
       context.stroke();
 
@@ -785,9 +788,9 @@ function BrainVisualLegacy() {
         context.moveTo(from.x, from.y);
         context.lineTo(to.x, to.y);
         context.strokeStyle = isPulsing
-          ? `rgba(111, 246, 232, ${0.45 * depthAlpha})`
+          ? `rgba(12, 225, 239, ${0.45 * depthAlpha})`
           : edge.crossHemisphere
-            ? `rgba(103, 160, 221, ${0.19 * depthAlpha})`
+            ? `rgba(22, 113, 166, ${0.19 * depthAlpha})`
             : `rgba(193, 224, 231, ${0.25 * depthAlpha})`;
         context.lineWidth = isPulsing ? 0.9 : 0.48;
         context.stroke();
@@ -802,7 +805,7 @@ function BrainVisualLegacy() {
         if (index === 0) context.moveTo(seamPoint.x, seamPoint.y);
         else context.lineTo(seamPoint.x, seamPoint.y);
       }
-      context.strokeStyle = "rgba(147, 226, 224, 0.42)";
+      context.strokeStyle = "rgba(22, 113, 166, 0.42)";
       context.lineWidth = 1;
       context.setLineDash([2, 5]);
       context.stroke();
@@ -818,9 +821,9 @@ function BrainVisualLegacy() {
         context.arc(position.x, position.y, radius, 0, Math.PI * 2);
         context.fillStyle =
           point.phase > pulse && point.phase < pulse + 0.035
-            ? "#b6fff1"
+            ? "#0ce1ef"
             : `rgba(224, 246, 248, ${Math.max(0.32, 0.88 - position.depth * 0.24)})`;
-        context.shadowColor = "#81eee5";
+        context.shadowColor = "#0ce1ef";
         context.shadowBlur = radius > 2 ? 7 : 2;
         context.fill();
       });
@@ -879,10 +882,6 @@ function BrainVisualLegacy() {
     >
       <div className="brain-aura" aria-hidden="true" />
       <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
-      <span className="brain-caption">
-        <span className="brain-caption-dot" />
-        Intelligence, by design
-      </span>
       {activeSpark && (
         <svg
           key={activeSpark.key}
@@ -1298,10 +1297,10 @@ function BrainVisual() {
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
         context.fillStyle =
           point.hue === "cyan"
-            ? `rgba(105, 242, 235, ${alpha})`
+            ? `rgba(12, 225, 239, ${alpha})`
             : `rgba(222, 247, 249, ${alpha})`;
         if (pulse > 0.88) {
-          context.shadowColor = point.hue === "cyan" ? "#56fff0" : "#c8ffff";
+          context.shadowColor = point.hue === "cyan" ? "#0ce1ef" : "#bdeeff";
           context.shadowBlur = point.hue === "cyan" ? 11 : 7;
         }
         context.fill();
@@ -1368,10 +1367,6 @@ function BrainVisual() {
       aria-label="A brain formed from glowing particles and AI capabilities"
     >
       <canvas className="brain-model" ref={canvasRef} aria-hidden="true" />
-      <span className="brain-caption">
-        <span className="brain-caption-dot" />
-        Intelligence, by design
-      </span>
       {activeSpark && (
         <svg
           key={activeSpark.key}
@@ -1418,6 +1413,56 @@ function BrainVisual() {
           <i />
           {capability.title}
         </button>
+      ))}
+    </div>
+  );
+}
+
+function AIOrbitVisual() {
+  const capabilities = [
+    { title: "LLMs", className: "term-llms" },
+    { title: "Agentic AI", className: "term-agents" },
+    { title: "AI Architecture", className: "term-architecture" },
+    { title: "RAG Systems", className: "term-rag" },
+    { title: "AI Automation", className: "term-automation" },
+    { title: "AI Integrations", className: "term-integrations" },
+  ];
+
+  return (
+    <div
+      className="ai-orbit-visual"
+      role="group"
+      aria-label="A softly rotating three-dimensional AI core surrounded by AI capabilities"
+    >
+      <div className="ai-orbit-glow" aria-hidden="true" />
+      <div className="ai-orbit-system" aria-hidden="true">
+        <div className="ai-orbit-ring ai-orbit-ring-one">
+          <span />
+        </div>
+        <div className="ai-orbit-ring ai-orbit-ring-two">
+          <span />
+        </div>
+        <div className="ai-orbit-ring ai-orbit-ring-three">
+          <span />
+        </div>
+        <div className="ai-orbit-ring ai-orbit-ring-four">
+          <span />
+        </div>
+        <div className="ai-core">
+          <div className="ai-core-ring">
+            <span>AI</span>
+          </div>
+        </div>
+      </div>
+      {capabilities.map((capability, index) => (
+        <span
+          key={capability.title}
+          className={`ai-orbit-term ${capability.className}`}
+          style={{ "--orbit-delay": `${index * -6}s` }}
+        >
+          <i />
+          {capability.title}
+        </span>
       ))}
     </div>
   );
@@ -1767,7 +1812,7 @@ function CTA({
             <h2>{title}</h2>
             <p>{text}</p>
             <div className="engagement-details">
-              <a href="mailto:hello@example.com">
+              <a href="mailto:abdullahamirr9@gmail.com">
                 <span className="engagement-icon">
                   <Icon name="mail" size={20} />
                 </span>
@@ -1776,7 +1821,7 @@ function CTA({
                   <strong>abdullahamirr9@gmail.com</strong>
                 </span>
               </a>
-              <a href="tel:+923000000000">
+              <a href="tel:+923045175871">
                 <span className="engagement-icon">
                   <Icon name="phone" size={20} />
                 </span>
@@ -2045,10 +2090,12 @@ function Footer() {
         <div className="footer-grid">
           <div className="footer-brand">
             <a href="index.html" aria-label="FutureSort Technologies home">
-              <span
+              <img
                 className="brand-image"
-                style={{ "--logo-mask": `url("${logoFull}")` }}
-                aria-hidden="true"
+                src={logoFull}
+                alt=""
+                width="1017"
+                height="245"
               />
             </a>
             <p>
@@ -2071,8 +2118,8 @@ function Footer() {
           </div>
           <div className="footer-column">
             <h2>Get in touch</h2>
-            <a href="abdullahamirr9@gmail.com">abdullahamirr9@gmail.com</a>
-            <a href="03045175871">+92 304 5175871</a>
+            <a href="mailto:abdullahamirr9@gmail.com">abdullahamirr9@gmail.com</a>
+            <a href="tel:+923045175871">+92 304 5175871</a>
             <span>Lahore, Pakistan</span>
           </div>
         </div>
@@ -2132,13 +2179,8 @@ function HomePage() {
             </div>
           </div>
           <div className="hero-art reveal">
-            <BrainVisual />
+            <AIOrbitVisual />
           </div>
-        </div>
-        <div className="container hero-bottom">
-          <a href="#capabilities">
-            Discover the difference <span>↓</span>
-          </a>
         </div>
       </section>
 
@@ -4047,17 +4089,7 @@ function App() {
         <Page />
       </main>
       <Footer />
-      <a
-        className="back-to-top"
-        href="#top"
-        onClick={(event) => {
-          event.preventDefault();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
-        aria-label="Back to top"
-      >
-        <span>↑</span>
-      </a>
+      <Chatbot />
     </>
   );
 }

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
@@ -50,3 +51,26 @@ class DemoRequestCreated(BaseModel):
 
     id: int
     created_at: datetime
+
+
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=1800)
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(min_length=1, max_length=12)
+
+    @model_validator(mode="after")
+    def validate_conversation(self) -> "ChatRequest":
+        if self.messages[-1].role != "user":
+            raise ValueError("The last chat message must be from the user.")
+        if sum(len(message.content) for message in self.messages) > 10000:
+            raise ValueError("The conversation is too long. Please start a new chat.")
+        return self
+
+
+class ChatResponse(BaseModel):
+    reply: str
