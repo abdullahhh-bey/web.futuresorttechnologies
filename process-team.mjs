@@ -27,7 +27,7 @@ const members = [
     targetFile: 'abdullah-amirr.webp',
   },
   {
-    name: 'Hasnain Ashfaq',
+    name: 'Husnain Ashfaq',
     role: 'CTO',
     sourceFile: 'CTO.png',
     targetFile: 'hasnain-ashfaq.webp',

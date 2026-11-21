@@ -451,6 +451,9 @@ function Header({ currentPage }) {
             className={`nav-links${open ? " is-open" : ""}`}
             aria-label="Main navigation"
           >
+            <span className="nav-drawer-label" aria-hidden="true">
+              Explore
+            </span>
             {links.map(([label, href]) => (
               <a
                 key={href}
@@ -1774,7 +1777,6 @@ function ServiceCard({ item, index }) {
         <span className="service-icon">
           <Icon name={item.icon} size={24} />
         </span>
-        <span className="service-number">{item.number}</span>
       </div>
       <h3>{item.title}</h3>
       <p>{item.text}</p>

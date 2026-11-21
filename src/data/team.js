@@ -26,14 +26,14 @@ export const teamMembers = [
   },
   {
     id: "hasnain-ashfaq",
-    name: "Hasnain Ashfaq",
+    name: "Husnain Ashfaq",
     position: "CHIEF TECHNOLOGY OFFICER",
     description: "PhD in Automation and UMT Assistant Professor specializing in AI, machine learning and robotics.",
     image: "/team/hasnain-ashfaq.webp",
-    alt: "Portrait of Hasnain Ashfaq, Chief Technology Officer at FutureSort",
+    alt: "Portrait of Husnain Ashfaq, Chief Technology Officer at FutureSort",
     width: 800,
     height: 1000,
-    linkedin: "", // Add LinkedIn profile URL here, e.g. "https://www.linkedin.com/in/hasnain-ashfaq"
+    linkedin: "", // Add LinkedIn profile URL here, e.g. "https://www.linkedin.com/in/husnain-ashfaq"
   },
   {
     id: "muhammad-zeeshan",

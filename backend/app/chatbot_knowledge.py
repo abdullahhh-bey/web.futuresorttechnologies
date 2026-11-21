@@ -45,7 +45,7 @@ Published reviews praise: security and role-based access on the legal CRM (Ali A
 TEAM
 - Atiq ur Rehman — Founder & Chief Executive Officer; AI/ML, frontend development, and database design.
 - Abdullah Amirr — Co-Founder & Technical Lead Engineer; backend and AI engineering, scalable APIs, AI agents, and automation.
-- Hasnain Ashfaq — Chief Technology Officer; PhD in Automation and UMT Assistant Professor, specializing in AI, machine learning, and robotics.
+- Husnain Ashfaq — Chief Technology Officer; PhD in Automation and UMT Assistant Professor, specializing in AI, machine learning, and robotics.
 - Muhammad Zeeshan — Chief Operating Officer; full-stack developer working with MERN, Flutter, and LLM agents.
 The team page presents a focused engineering team combining research rigor, full-stack craft, and practical AI delivery. Do not invent further employee names or job titles.
 
