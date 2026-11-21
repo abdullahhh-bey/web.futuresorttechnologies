@@ -5,6 +5,7 @@ import { clientReviews } from "./data/reviews.js";
 import { submitForm } from "./api.js";
 import Chatbot from "./Chatbot.jsx";
 import logoFull from "../assets/logo-full.png";
+import logoMark from "../assets/logo-mark-loader.png";
 
 const pages = {
   "/": "Home",
@@ -205,22 +206,190 @@ function Icon({ name, size = 25 }) {
   );
 }
 
-function LoadingLine() {
-  const [visible, setVisible] = useState(true);
+const PAGE_TRANSITION_KEY = "futuresort:page-transition-until";
+const HOME_LOADER_KEY = "futuresort:home-loader-seen";
+
+const LOADER_CODE_LINES = [
+  '<span class="k">const</span> build = <span class="k">await</span> compile(source);',
+  '<span class="dim">// initializing render pipeline</span>',
+  '<span class="k">function</span> mount(root) { render(app, root); }',
+  'POST /api/v1/deploy <span class="dim">200 OK</span>',
+  '{ <span class="k">"status"</span>: <span class="k">"ready"</span>, <span class="dim">"latency": 42</span> }',
+  '<span class="k">SELECT</span> * <span class="k">FROM</span> projects <span class="k">WHERE</span> live = true;',
+  '<span class="k">import</span> { useEffect } <span class="k">from</span> <span class="dim">"react"</span>;',
+  ".core { animation: pulse 2s infinite; }",
+  '<span class="dim">$</span> npm run build <span class="dim">&nbsp;&nbsp;✓</span>',
+  '<span class="k">class</span> Engine <span class="k">extends</span> Core {}',
+  '<span class="k">export default</span> function App() {}',
+  '<span class="dim">// linking modules…</span>',
+  '<span class="k">GET</span> /assets/bundle.js <span class="dim">200</span>',
+  '<span class="k">if</span> (ready) { initialize(); }',
+  'git commit -m <span class="dim">"ship it"</span>',
+  '<span class="k">const</span> nodes = graph.connect(a, b);',
+];
+
+const LOADER_STATUS = ["INITIALIZING", "COMPILING ASSETS", "BUILD COMPLETE"];
+
+function getLoaderMode() {
+  const path =
+    window.location.pathname === "/"
+      ? "/index.html"
+      : window.location.pathname;
+  const transitionUntil = Number(sessionStorage.getItem(PAGE_TRANSITION_KEY));
+  const firstHomeVisit =
+    path === "/index.html" && sessionStorage.getItem(HOME_LOADER_KEY) !== "true";
+  if (firstHomeVisit) return "full"; // pehli visit: poora boot sequence
+  if (transitionUntil > Date.now()) return "short"; // page change: chhota loader
+  return null;
+}
+
+function LoaderCodeColumn({ side }) {
+  // list 2 baar, taake scroll seamless loop ho
+  const lines = [...LOADER_CODE_LINES, ...LOADER_CODE_LINES];
+  return (
+    <div className={`page-loader-code page-loader-code-${side}`} aria-hidden="true">
+      <div className="page-loader-code-track">
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            className="page-loader-line"
+            style={{ animationDelay: `${((i * 0.37) % 2.4).toFixed(2)}s` }}
+            dangerouslySetInnerHTML={{ __html: line }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LoaderLink({ side }) {
+  return (
+    <div className={`page-loader-link page-loader-link-${side}`} aria-hidden="true">
+      <i className="page-loader-particle" />
+      <i className="page-loader-particle" style={{ animationDelay: ".9s" }} />
+    </div>
+  );
+}
+
+function PageLoader() {
+  const [mode, setMode] = useState(getLoaderMode);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setVisible(false), 720);
-    return () => window.clearTimeout(timer);
+    const currentPath =
+      window.location.pathname === "/"
+        ? "/index.html"
+        : window.location.pathname;
+    if (
+      currentPath === "/index.html" &&
+      sessionStorage.getItem(HOME_LOADER_KEY) !== "true"
+    ) {
+      sessionStorage.setItem(HOME_LOADER_KEY, "true");
+    }
+    if (sessionStorage.getItem(PAGE_TRANSITION_KEY)) {
+      sessionStorage.removeItem(PAGE_TRANSITION_KEY);
+    }
+
+    const onDocumentClick = (event) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        !(event.target instanceof Element)
+      ) {
+        return;
+      }
+
+      const link = event.target.closest("a[href]");
+      if (
+        !link ||
+        link.hasAttribute("download") ||
+        (link.target && link.target.toLowerCase() !== "_self")
+      ) {
+        return;
+      }
+
+      const destination = new URL(link.href, window.location.href);
+      if (destination.origin !== window.location.origin) return;
+
+      const destinationPath =
+        destination.pathname === "/" ? "/index.html" : destination.pathname;
+      const samePage =
+        destinationPath === currentPath &&
+        destination.search === window.location.search;
+      if (samePage) return;
+
+      sessionStorage.setItem(
+        PAGE_TRANSITION_KEY,
+        String(Date.now() + 15_000),
+      );
+    };
+
+    const onPageShow = (event) => {
+      if (event.persisted) setMode("short");
+    };
+
+    document.addEventListener("click", onDocumentClick);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      document.removeEventListener("click", onDocumentClick);
+      window.removeEventListener("pageshow", onPageShow);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!mode) return undefined;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    // full = purane site wale 4050ms, short = 1800ms (pehle jaisa)
+    const duration = reduceMotion ? 700 : mode === "full" ? 4050 : 1_800;
+    const timer = window.setTimeout(() => setMode(null), duration);
+    return () => window.clearTimeout(timer);
+  }, [mode]);
+
+  if (!mode) return null;
 
   return (
     <div
-      className={`loading-line${visible ? " is-active" : ""}`}
-      aria-hidden="true"
+      className={`page-loader page-loader-${mode}`}
+      role="status"
+      aria-label="Loading FutureSort"
     >
-      <span />
+      {mode === "full" && (
+        <div className="page-loader-vignette" aria-hidden="true" />
+      )}
+      {mode === "full" && <LoaderCodeColumn side="left" />}
+      {mode === "full" && <LoaderCodeColumn side="right" />}
+      <LoaderLink side="left" />
+      <LoaderLink side="right" />
+      <div className="page-loader-content">
+        <div className="page-loader-core" aria-hidden="true">
+          <span className="page-loader-circle" />
+          <div className="page-loader-emblem">
+            <span className="page-loader-orbit page-loader-orbit-blue" />
+            <span className="page-loader-orbit page-loader-orbit-cyan" />
+            <img src={logoMark} alt="" width="1440" height="1440" />
+          </div>
+        </div>
+      </div>
+      {mode === "full" && (
+        <div className="page-loader-status" aria-hidden="true">
+          {LOADER_STATUS.map((text, i) => (
+            <span key={text} className={`page-loader-status-${i + 1}`}>
+              {text}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
+}
+
+function CardSparkBorder() {
+  return <span className="brand-spark-border" aria-hidden="true" />;
 }
 
 function Header({ currentPage }) {
@@ -401,7 +570,7 @@ function NetworkCanvas() {
           const other = nodes[j];
           const distance = Math.hypot(node.x - other.x, node.y - other.y);
           if (distance < 150) {
-            context.strokeStyle = `rgba(12, 225, 239, ${(1 - distance / 150) * 0.22})`;
+            context.strokeStyle = `rgba(48, 215, 232, ${(1 - distance / 150) * 0.22})`;
             context.lineWidth = 1;
             context.beginPath();
             context.moveTo(node.x, node.y);
@@ -422,8 +591,8 @@ function NetworkCanvas() {
 
         const glow = (Math.sin(node.phase) + 1) / 2;
         context.beginPath();
-        context.fillStyle = `rgba(12, 225, 239, ${0.42 + glow * 0.3})`;
-        context.shadowColor = "rgba(12, 225, 239, 0.8)";
+        context.fillStyle = `rgba(42, 239, 242, ${0.42 + glow * 0.3})`;
+        context.shadowColor = "rgba(67, 244, 243, 0.8)";
         context.shadowBlur = 5 + glow * 5;
         context.arc(node.x, node.y, 1.2 + glow * 0.7, 0, Math.PI * 2);
         context.fill();
@@ -595,9 +764,9 @@ function BrainVisualLegacy() {
         height / 2,
         Math.min(width, height) * 0.42,
       );
-      glow.addColorStop(0, "rgba(12, 225, 239, 0.13)");
-      glow.addColorStop(0.52, "rgba(22, 113, 166, 0.055)");
-      glow.addColorStop(1, "rgba(5, 15, 29, 0)");
+      glow.addColorStop(0, "rgba(48, 215, 232, 0.13)");
+      glow.addColorStop(0.52, "rgba(34, 120, 191, 0.055)");
+      glow.addColorStop(1, "rgba(2, 7, 12, 0)");
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
 
@@ -637,11 +806,11 @@ function BrainVisualLegacy() {
         brainX(0.12),
         brainY(0.9),
       );
-      stemFill.addColorStop(0, "rgba(12, 225, 239, 0.72)");
-      stemFill.addColorStop(1, "rgba(15, 31, 47, 0.94)");
+      stemFill.addColorStop(0, "rgba(48, 215, 232, 0.72)");
+      stemFill.addColorStop(1, "rgba(11, 19, 32, 0.94)");
       context.fillStyle = stemFill;
       context.fill(stem);
-      context.strokeStyle = "rgba(12, 225, 239, 0.62)";
+      context.strokeStyle = "rgba(48, 215, 232, 0.62)";
       context.lineWidth = 1.4;
       context.stroke(stem);
 
@@ -698,9 +867,9 @@ function BrainVisualLegacy() {
           brainX(side * 0.1),
           brainY(0.6),
         );
-        fill.addColorStop(0, "rgba(12, 225, 239, 0.72)");
-        fill.addColorStop(0.45, "rgba(22, 113, 166, 0.78)");
-        fill.addColorStop(1, "rgba(12, 27, 43, 0.9)");
+        fill.addColorStop(0, "rgba(48, 215, 232, 0.72)");
+        fill.addColorStop(0.45, "rgba(34, 120, 191, 0.78)");
+        fill.addColorStop(1, "rgba(11, 19, 32, 0.9)");
         context.fillStyle = fill;
         context.fillRect(
           brainX(-1),
@@ -731,8 +900,8 @@ function BrainVisualLegacy() {
             );
             context.strokeStyle =
               index % 2 === 0
-                ? "rgba(4, 17, 28, 0.62)"
-                : "rgba(12, 225, 239, 0.48)";
+                ? "rgba(2, 7, 12, 0.62)"
+                : "rgba(48, 215, 232, 0.48)";
             context.lineWidth = index % 3 === 0 ? 2.2 : 1.4;
             context.lineCap = "round";
             context.stroke();
@@ -741,9 +910,9 @@ function BrainVisualLegacy() {
         context.restore();
 
         context.beginPath();
-        context.strokeStyle = "rgba(12, 225, 239, 0.82)";
+        context.strokeStyle = "rgba(42, 239, 242, 0.82)";
         context.lineWidth = 1.35;
-        context.shadowColor = "rgba(12, 225, 239, 0.72)";
+        context.shadowColor = "rgba(67, 244, 243, 0.72)";
         context.shadowBlur = 10;
         context.stroke(lobe);
         context.shadowBlur = 0;
@@ -759,7 +928,7 @@ function BrainVisualLegacy() {
         brainX(0),
         brainY(0.51),
       );
-      context.strokeStyle = "rgba(5, 15, 24, 0.96)";
+      context.strokeStyle = "rgba(2, 7, 12, 0.96)";
       context.lineWidth = 3;
       context.stroke();
       context.beginPath();
@@ -772,7 +941,7 @@ function BrainVisualLegacy() {
         brainX(0),
         brainY(0.47),
       );
-      context.strokeStyle = "rgba(12, 225, 239, 0.62)";
+      context.strokeStyle = "rgba(42, 239, 242, 0.62)";
       context.lineWidth = 0.85;
       context.stroke();
 
@@ -788,9 +957,9 @@ function BrainVisualLegacy() {
         context.moveTo(from.x, from.y);
         context.lineTo(to.x, to.y);
         context.strokeStyle = isPulsing
-          ? `rgba(12, 225, 239, ${0.45 * depthAlpha})`
+          ? `rgba(48, 215, 232, ${0.45 * depthAlpha})`
           : edge.crossHemisphere
-            ? `rgba(22, 113, 166, ${0.19 * depthAlpha})`
+            ? `rgba(53, 150, 226, ${0.19 * depthAlpha})`
             : `rgba(193, 224, 231, ${0.25 * depthAlpha})`;
         context.lineWidth = isPulsing ? 0.9 : 0.48;
         context.stroke();
@@ -805,7 +974,7 @@ function BrainVisualLegacy() {
         if (index === 0) context.moveTo(seamPoint.x, seamPoint.y);
         else context.lineTo(seamPoint.x, seamPoint.y);
       }
-      context.strokeStyle = "rgba(22, 113, 166, 0.42)";
+      context.strokeStyle = "rgba(34, 120, 191, 0.42)";
       context.lineWidth = 1;
       context.setLineDash([2, 5]);
       context.stroke();
@@ -821,9 +990,9 @@ function BrainVisualLegacy() {
         context.arc(position.x, position.y, radius, 0, Math.PI * 2);
         context.fillStyle =
           point.phase > pulse && point.phase < pulse + 0.035
-            ? "#0ce1ef"
+            ? "#30d7e8"
             : `rgba(224, 246, 248, ${Math.max(0.32, 0.88 - position.depth * 0.24)})`;
-        context.shadowColor = "#0ce1ef";
+        context.shadowColor = "#43f4f3";
         context.shadowBlur = radius > 2 ? 7 : 2;
         context.fill();
       });
@@ -1297,10 +1466,10 @@ function BrainVisual() {
         context.arc(point.x, point.y, radius, 0, Math.PI * 2);
         context.fillStyle =
           point.hue === "cyan"
-            ? `rgba(12, 225, 239, ${alpha})`
+            ? `rgba(48, 215, 232, ${alpha})`
             : `rgba(222, 247, 249, ${alpha})`;
         if (pulse > 0.88) {
-          context.shadowColor = point.hue === "cyan" ? "#0ce1ef" : "#bdeeff";
+          context.shadowColor = point.hue === "cyan" ? "#43f4f3" : "#3596e2";
           context.shadowBlur = point.hue === "cyan" ? 11 : 7;
         }
         context.fill();
@@ -1597,9 +1766,10 @@ function TechnologySection() {
 function ServiceCard({ item, index }) {
   return (
     <article
-      className="service-card reveal"
+      className="service-card brand-spark-card reveal"
       style={{ "--reveal-delay": `${(index % 3) * 90}ms` }}
     >
+      <CardSparkBorder />
       <div className="service-card-top">
         <span className="service-icon">
           <Icon name={item.icon} size={24} />
@@ -2045,7 +2215,8 @@ function ReviewsSection() {
           aria-label="Client reviews"
         >
           {clientReviews.map((review) => (
-            <article className="review-card" key={review.id}>
+            <article className="review-card brand-spark-card" key={review.id}>
+              <CardSparkBorder />
               <div className="review-card-top">
                 <span className="review-tag">{review.project}</span>
                 <span className="review-category-pill">{review.category}</span>
@@ -2373,9 +2544,10 @@ function LearningPage() {
           <div className="learning-track-grid">
             {learningTracks.map((track) => (
               <article
-                className={`learning-track-card reveal learning-track-${track.id}`}
+                className={`learning-track-card brand-spark-card reveal learning-track-${track.id}`}
                 key={track.id}
               >
+                <CardSparkBorder />
                 <div className="learning-track-topline">
                   <span>{track.number}</span>
                   <span className="learning-track-pill">2 months</span>
@@ -2804,7 +2976,8 @@ function TeamMemberCard({ member, index }) {
       role="region"
       aria-label={`${member.name}, ${member.position}`}
     >
-      <div className="team-member-photo-frame">
+      <div className="team-member-photo-frame brand-spark-card">
+        <CardSparkBorder />
         <img
           src={member.image}
           alt={
@@ -2900,10 +3073,11 @@ function TeamPage() {
           <div className="team-values-grid">
             {teamValues.map((value, index) => (
               <article
-                className="team-value-card reveal"
+                className="team-value-card brand-spark-card reveal"
                 style={{ "--reveal-delay": `${index * 75}ms` }}
                 key={value.title}
               >
+                <CardSparkBorder />
                 <span className="team-value-icon">
                   <Icon name={value.icon} size={19} />
                 </span>
@@ -2952,9 +3126,10 @@ function ProjectCard({ project, index }) {
   return (
     <>
       <article
-        className="project-card reveal"
+        className="project-card brand-spark-card reveal"
         style={{ "--reveal-delay": `${(index % 2) * 100}ms` }}
       >
+        <CardSparkBorder />
         <div
           className={`project-visual visual-${(index % 6) + 1}${images.length ? " has-screenshot" : ""}`}
         >
@@ -3345,10 +3520,11 @@ function PortfolioProjectCard({ project, index }) {
   return (
     <article
       ref={cardRef}
-      className={`portfolio-project-card${isVisible ? " is-visible" : ""}`}
+      className={`portfolio-project-card brand-spark-card${isVisible ? " is-visible" : ""}`}
       data-project-slug={project.slug}
       style={{ "--card-delay": `${(index % 2) * 60}ms` }}
     >
+      <CardSparkBorder />
       <a
         className="portfolio-card-link"
         href={projectHref(project)}
@@ -3918,7 +4094,8 @@ function ContactPage() {
               </div>
             </div>
           </div>
-          <div className="form-card reveal">
+          <div className="form-card brand-spark-card reveal">
+            <CardSparkBorder />
             <div className="form-heading">
               <span className="eyebrow">
                 <span className="eyebrow-dot" />
@@ -4083,7 +4260,7 @@ function App() {
 
   return (
     <>
-      <LoadingLine />
+      <PageLoader />
       <Header currentPage={currentPage} />
       <main>
         <Page />
